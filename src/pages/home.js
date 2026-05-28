@@ -11,7 +11,7 @@ function renderHome() {
       <div class="logo">
         <img src="${logoUrl}" alt="Ls. Barbearia"
           style="width:120px;height:120px;object-fit:contain;margin:0 auto 10px;display:block;
-          filter:drop-shadow(0 0 20px rgba(255,30,30,.4));">
+          border-radius:50%;border:2px solid #ff1e1e;box-shadow:0 0 20px rgba(255,30,30,.35);">
         <p style="font-size:10px;letter-spacing:4px;color:rgba(255,255,255,.4);margin-top:4px;">ESTILO · ATITUDE · CONFIANÇA</p>
       </div>
       <div class="hero-text">
@@ -22,7 +22,9 @@ function renderHome() {
           style="display:flex;align-items:center;justify-content:center;gap:8px;
           margin-top:12px;padding:14px;border:1.5px solid #25D366;border-radius:14px;
           color:#25D366;font-size:14px;font-weight:600;text-decoration:none;">
-          💬 WhatsApp
+          <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+            style="width:20px;height:20px;" alt="WhatsApp">
+          WhatsApp
         </a>
       </div>
     </div>
@@ -30,8 +32,8 @@ function renderHome() {
     <div class="cards">
       <div class="card" onclick="goTo('services')"><div class="icon">✂️</div><h3>Serviços</h3></div>
       <div class="card" onclick="goTo('barbeiros')"><div class="icon">💈</div><h3>Barbeiros</h3></div>
-      <div class="card" onclick="goTo('promos')"><div class="icon">🔥</div><h3>Promoções</h3></div>
       <div class="card" onclick="goTo('galeria')"><div class="icon">📸</div><h3>Galeria</h3></div>
+      <div class="card" onclick="goTo('chat')"><div class="icon">💬</div><h3>Chat</h3></div>
     </div>
 
     <div class="rating-bar">
