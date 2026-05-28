@@ -53,7 +53,7 @@ function renderScreen(name) {
   updateBottomNav();
   updateSidebarActive(name);
 
-  if (name === 'agendar')          initCalendar();
+  if (name === 'agendar')          setTimeout(initAgendar, 50);
   if (name === 'confirmacao')      syncConfirmScreen();
   if (name === 'perfil')           setTimeout(loadNextBooking, 100);
   if (name === 'ganhos')           setTimeout(loadGanhos, 100);
