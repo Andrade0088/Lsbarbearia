@@ -13,6 +13,7 @@ var SCREENS = {
   chat:           renderChat,
   ganhos:         renderGanhos,
   escala:         renderEscala,
+  comanda:        renderComanda,
 };
 
 var HIDE_NAV = ['login', 'confirmacao'];

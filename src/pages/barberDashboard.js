@@ -36,6 +36,15 @@ function renderBarberDash() {
       <div class="stat-card"><div class="stat-num" id="stat-pendente">—</div><div class="stat-label">Pendentes</div></div>
     </div>
 
+    <!-- Botão comanda -->
+    <div style="padding:0 20px 16px;">
+      <button onclick="goTo('comanda')" style="width:100%;padding:13px;background:rgba(255,30,30,.1);
+        border:1px solid rgba(255,30,30,.4);border-radius:12px;color:var(--red);
+        font-size:13px;font-weight:700;cursor:pointer;">
+        🍺 ABRIR COMANDA (Bebidas / Sinuca)
+      </button>
+    </div>
+
     <!-- Filtros -->
     <div class="filter-tabs">
       ${['todos','confirmado','pendente','concluido'].map(f => `
