@@ -1,4 +1,6 @@
 function renderHome() {
+  var logoUrl = '/public/Logo_Ls.jpeg';
+
   return `
   <div class="screen active" id="screen-home">
     <div class="topbar">
@@ -7,9 +9,10 @@ function renderHome() {
     </div>
     <div class="home-hero">
       <div class="logo">
-        <p class="logo-sub">✦ BARBEARIA ✦</p>
-        <h1>LS <span>BARBEARIA</span></h1>
-        <p style="font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-top:4px;">ESTILO · ATITUDE · CONFIANÇA</p>
+        <img src="${logoUrl}" alt="Ls. Barbearia"
+          style="width:120px;height:120px;object-fit:contain;margin:0 auto 10px;display:block;
+          filter:drop-shadow(0 0 20px rgba(255,30,30,.4));">
+        <p style="font-size:10px;letter-spacing:4px;color:rgba(255,255,255,.4);margin-top:4px;">ESTILO · ATITUDE · CONFIANÇA</p>
       </div>
       <div class="hero-text">
         <h2>Não deixe para<br>amanhã o que pode<br><span>alinhar hoje.</span></h2>
@@ -39,22 +42,21 @@ function renderHome() {
       </div>
     </div>
 
-    <!-- Barbeiros -->
     <div style="padding:0 20px 24px;">
       <p style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:12px;">NOSSOS BARBEIROS</p>
       <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;">
-        ${APP_DATA.barbers.map(b => `
-          <div onclick="goTo('barbeiros')" style="flex-shrink:0;text-align:center;cursor:pointer;">
-            <div style="width:64px;height:64px;border-radius:50%;border:2px solid var(--red);
-              background:var(--card);display:flex;align-items:center;justify-content:center;
-              font-size:22px;font-weight:800;color:var(--red);margin:0 auto 6px;overflow:hidden;">
-              ${b.photo && !b.photo.includes('_URL')
-                ? `<img src="${b.photo}" style="width:100%;height:100%;object-fit:cover;">`
-                : b.name.charAt(0)}
-            </div>
-            <p style="font-size:11px;font-weight:600;color:white;">${b.name}</p>
-            <p style="font-size:10px;color:var(--text-muted);">${b.nick}</p>
-          </div>`).join('')}
+        ${APP_DATA.barbers.map(function(b) {
+          var hasPhoto = b.photo && b.photo.indexOf('_URL') < 0;
+          return '<div onclick="goTo(\'barbeiros\')" style="flex-shrink:0;text-align:center;cursor:pointer;">' +
+            '<div style="width:64px;height:64px;border-radius:50%;border:2px solid var(--red);' +
+            'background:var(--card);display:flex;align-items:center;justify-content:center;' +
+            'font-size:22px;font-weight:800;color:var(--red);margin:0 auto 6px;overflow:hidden;">' +
+            (hasPhoto ? '<img src="' + b.photo + '" style="width:100%;height:100%;object-fit:cover;">' : b.name.charAt(0)) +
+            '</div>' +
+            '<p style="font-size:11px;font-weight:600;color:white;">' + b.name + '</p>' +
+            '<p style="font-size:10px;color:var(--text-muted);">' + b.nick + '</p>' +
+            '</div>';
+        }).join('')}
       </div>
     </div>
   </div>`;
