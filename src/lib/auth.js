@@ -54,9 +54,27 @@ async function loadProfile(user) {
 }
 
 function redirectByRole(role) {
-  if (role === 'adm')           goTo('home');
-  else if (role === 'barbeiro') goTo('barberDash');
-  else                          goTo('home');
+  if (role === 'adm') {
+    goTo('home');
+  } else if (role === 'barbeiro') {
+    goTo('barberDash');
+  } else if (role === 'cliente') {
+    goTo('home');
+  } else {
+    // Role inválido — desloga imediatamente
+    sb.auth.signOut();
+    goTo('login');
+  }
+}
+
+// Verifica se o usuário logado tem permissão para a tela atual
+function checkRoleAccess(requiredRole) {
+  if (!authState.user) { goTo('login'); return false; }
+  if (authState.role !== requiredRole && authState.role !== 'adm') {
+    goTo('home');
+    return false;
+  }
+  return true;
 }
 
 async function doLogin(email, password) {
