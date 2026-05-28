@@ -14,12 +14,12 @@ function renderPerfil() {
 
   return `
   <div class="screen" id="screen-perfil">
-    <div class="topbar" style="background:transparent;position:absolute;z-index:10;">
+    <div class="topbar">
       <button class="back-btn" onclick="goTo('home')">←</button>
       <span></span>
       <span style="font-size:20px;cursor:pointer">⚙️</span>
     </div>
-    <div class="profile-hero" style="background:linear-gradient(160deg,#0d0014 0%,#1a0000 50%,#050816 100%);">
+    <div class="profile-hero" style="background:linear-gradient(160deg,#0d0014 0%,#1a0000 50%,#050816 100%);padding-top:20px;">
       ${avatarHtml}
       <div class="profile-name">Olá, ${name} 👋</div>
       <div class="profile-email">${email}</div>
