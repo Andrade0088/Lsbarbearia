@@ -5,7 +5,7 @@ function renderLogin() {
       background:linear-gradient(160deg,#050816 60%,rgba(255,30,30,.12) 100%);">
 
       <!-- Logo -->
-      <div style="text-align:center;padding:60px 24px 32px;">
+      <div style="text-align:center;padding:0 24px 32px;">
         <div style="font-size:11px;letter-spacing:5px;color:rgba(255,255,255,.35);margin-bottom:8px;">✦ BARBEARIA ✦</div>
         <h1 style="font-size:36px;font-weight:800;letter-spacing:4px;color:#fff;">LS<span style="color:#ff1e1e;">BARBEARIA</span></h1>
         <p style="font-size:13px;color:var(--text-muted);margin-top:8px;">Seu estilo, sua atitude.</p>
@@ -26,7 +26,7 @@ function renderLogin() {
       </div>
 
       <!-- Formulário LOGIN -->
-      <div id="form-login" style="padding:0 24px;flex:1;">
+      <div id="form-login" style="padding:0 24px;">
         <div style="margin-bottom:16px;">
           <label style="font-size:12px;font-weight:600;color:var(--text-muted);letter-spacing:.5px;">E-MAIL</label>
           <input id="login-email" type="email" placeholder="seu@email.com"
@@ -41,68 +41,65 @@ function renderLogin() {
         </div>
         <p style="text-align:right;font-size:12px;color:var(--red);margin-bottom:20px;cursor:pointer;">Esqueci a senha</p>
 
-        <div id="auth-error" style="display:none;background:rgba(255,30,30,.1);border:1px solid rgba(255,30,30,.3);
+        <div id="auth-error-login" style="display:none;background:rgba(255,30,30,.1);border:1px solid rgba(255,30,30,.3);
           border-radius:10px;padding:12px;font-size:13px;color:#ff6666;margin-bottom:16px;text-align:center;"></div>
 
-        <button id="auth-btn" data-label="ENTRAR" onclick="doLogin(
-          document.getElementById('login-email').value,
-          document.getElementById('login-password').value
-        )" class="btn">ENTRAR</button>
+        <button id="auth-btn-login" onclick="handleLogin()" class="btn">ENTRAR</button>
 
         <p style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:20px;">
-          É barbeiro? <span style="color:var(--red);cursor:pointer;font-weight:600;" onclick="switchAuthTab('register')">Crie sua conta profissional</span>
+          Não tem conta? <span style="color:var(--red);cursor:pointer;font-weight:600;" onclick="switchAuthTab('register')">Cadastre-se</span>
         </p>
       </div>
 
-      <!-- Formulário CADASTRO -->
-      <div id="form-register" style="display:none;padding:0 24px;flex:1;overflow-y:auto;">
-        <!-- Role selector -->
-        <div style="display:flex;gap:10px;margin-bottom:20px;">
-          <div id="role-cliente" onclick="selectRole('cliente')"
-            style="flex:1;padding:14px;background:linear-gradient(135deg,var(--red),var(--blue));border-radius:12px;
-            text-align:center;cursor:pointer;border:2px solid var(--red);">
-            <div style="font-size:22px;margin-bottom:4px;">👤</div>
-            <p style="font-size:12px;font-weight:700;">Cliente</p>
-          </div>
-          <div id="role-barbeiro" onclick="selectRole('barbeiro')"
-            style="flex:1;padding:14px;background:var(--card);border-radius:12px;
-            text-align:center;cursor:pointer;border:2px solid rgba(255,255,255,.1);">
-            <div style="font-size:22px;margin-bottom:4px;">💈</div>
-            <p style="font-size:12px;font-weight:700;color:var(--text-muted);">Barbeiro</p>
+      <!-- Formulário CADASTRO (apenas clientes) -->
+      <div id="form-register" style="display:none;padding:0 24px;overflow-y:auto;max-height:70vh;">
+
+        <div style="background:rgba(255,30,30,.08);border:1px solid rgba(255,30,30,.2);border-radius:12px;
+          padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:20px;">👤</span>
+          <div>
+            <p style="font-size:13px;font-weight:700;">Cadastro de Cliente</p>
+            <p style="font-size:11px;color:var(--text-muted);margin-top:2px;">Barbeiros são cadastrados pelo administrador</p>
           </div>
         </div>
 
-        <input id="reg-name" type="text" placeholder="Nome completo"
+        <input id="reg-name" type="text" placeholder="Nome completo *"
           style="width:100%;margin-bottom:12px;padding:14px 16px;background:var(--card);border:1px solid rgba(255,255,255,.1);
           border-radius:12px;color:white;font-size:14px;outline:none;">
-        <input id="reg-nick" type="text" placeholder="Apelido / @ (ex: @joaosilva)"
+
+        <input id="reg-nick" type="text" placeholder="Apelido (ex: @joaosilva)"
           style="width:100%;margin-bottom:12px;padding:14px 16px;background:var(--card);border:1px solid rgba(255,255,255,.1);
           border-radius:12px;color:white;font-size:14px;outline:none;">
+
         <input id="reg-phone" type="tel" placeholder="WhatsApp (11) 99999-9999"
           style="width:100%;margin-bottom:12px;padding:14px 16px;background:var(--card);border:1px solid rgba(255,255,255,.1);
           border-radius:12px;color:white;font-size:14px;outline:none;">
-        <input id="reg-email" type="email" placeholder="E-mail"
+
+        <input id="reg-email" type="email" placeholder="E-mail *"
           style="width:100%;margin-bottom:12px;padding:14px 16px;background:var(--card);border:1px solid rgba(255,255,255,.1);
           border-radius:12px;color:white;font-size:14px;outline:none;">
-        <input id="reg-password" type="password" placeholder="Senha (mín. 6 caracteres)"
-          style="width:100%;margin-bottom:6px;padding:14px 16px;background:var(--card);border:1px solid rgba(255,255,255,.1);
+
+        <input id="reg-password" type="password" placeholder="Senha (mín. 6 caracteres) *"
+          style="width:100%;margin-bottom:12px;padding:14px 16px;background:var(--card);border:1px solid rgba(255,255,255,.1);
           border-radius:12px;color:white;font-size:14px;outline:none;">
-        <input id="reg-password2" type="password" placeholder="Confirmar senha"
+
+        <input id="reg-password2" type="password" placeholder="Confirmar senha *"
           style="width:100%;margin-bottom:16px;padding:14px 16px;background:var(--card);border:1px solid rgba(255,255,255,.1);
           border-radius:12px;color:white;font-size:14px;outline:none;">
 
-        <div id="auth-error" style="display:none;background:rgba(255,30,30,.1);border:1px solid rgba(255,30,30,.3);
+        <div id="auth-error-register" style="display:none;background:rgba(255,30,30,.1);border:1px solid rgba(255,30,30,.3);
           border-radius:10px;padding:12px;font-size:13px;color:#ff6666;margin-bottom:16px;text-align:center;"></div>
 
-        <button id="auth-btn" data-label="CRIAR CONTA" onclick="handleRegister()" class="btn">CRIAR CONTA</button>
-        <div style="height:30px;"></div>
+        <button id="auth-btn-register" onclick="handleRegister()" class="btn">CRIAR CONTA</button>
+
+        <p style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:16px;margin-bottom:20px;">
+          Já tem conta? <span style="color:var(--red);cursor:pointer;font-weight:600;" onclick="switchAuthTab('login')">Entrar</span>
+        </p>
       </div>
 
     </div>
   </div>`;
 }
-
-let selectedRole = 'cliente';
 
 function switchAuthTab(tab) {
   const isLogin = tab === 'login';
@@ -112,23 +109,19 @@ function switchAuthTab(tab) {
   document.getElementById('tab-login').style.color         = isLogin ? 'white' : 'var(--text-muted)';
   document.getElementById('tab-register').style.background = isLogin ? 'transparent' : 'linear-gradient(90deg,var(--red),var(--blue))';
   document.getElementById('tab-register').style.color      = isLogin ? 'var(--text-muted)' : 'white';
-  setAuthError('');
 }
 
-function selectRole(role) {
-  selectedRole = role;
-  const active   = 'linear-gradient(135deg,var(--red),var(--blue))';
-  const inactive = 'var(--card)';
-  const activeBorder   = '2px solid var(--red)';
-  const inactiveBorder = '2px solid rgba(255,255,255,.1)';
+function handleLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl    = document.getElementById('auth-error-login');
+  const btn      = document.getElementById('auth-btn-login');
 
-  document.getElementById('role-cliente').style.background  = role === 'cliente'  ? active   : inactive;
-  document.getElementById('role-cliente').style.border      = role === 'cliente'  ? activeBorder   : inactiveBorder;
-  document.getElementById('role-barbeiro').style.background = role === 'barbeiro' ? active   : inactive;
-  document.getElementById('role-barbeiro').style.border     = role === 'barbeiro' ? activeBorder   : inactiveBorder;
+  errEl.style.display = 'none';
+  if (!email || !password) { errEl.textContent = 'Preencha e-mail e senha.'; errEl.style.display = 'block'; return; }
 
-  document.querySelector('#role-cliente p').style.color  = role === 'cliente'  ? 'white' : 'var(--text-muted)';
-  document.querySelector('#role-barbeiro p').style.color = role === 'barbeiro' ? 'white' : 'var(--text-muted)';
+  btn.disabled = true; btn.textContent = 'Aguarde...';
+  doLogin(email, password).finally(() => { btn.disabled = false; btn.textContent = 'ENTRAR'; });
 }
 
 function handleRegister() {
@@ -138,10 +131,14 @@ function handleRegister() {
   const email = document.getElementById('reg-email').value.trim();
   const pass  = document.getElementById('reg-password').value;
   const pass2 = document.getElementById('reg-password2').value;
+  const errEl = document.getElementById('auth-error-register');
+  const btn   = document.getElementById('auth-btn-register');
 
-  if (!name || !email || !pass) return setAuthError('Preencha todos os campos obrigatórios.');
-  if (pass !== pass2)           return setAuthError('As senhas não coincidem.');
-  if (pass.length < 6)          return setAuthError('Senha deve ter no mínimo 6 caracteres.');
+  errEl.style.display = 'none';
+  if (!name || !email || !pass) { errEl.textContent = 'Preencha todos os campos obrigatórios.'; errEl.style.display = 'block'; return; }
+  if (pass !== pass2)           { errEl.textContent = 'As senhas não coincidem.'; errEl.style.display = 'block'; return; }
+  if (pass.length < 6)          { errEl.textContent = 'Senha deve ter no mínimo 6 caracteres.'; errEl.style.display = 'block'; return; }
 
-  doRegister(name, nick, phone, email, pass, selectedRole);
+  btn.disabled = true; btn.textContent = 'Criando conta...';
+  doRegister(name, nick, phone, email, pass, 'cliente').finally(() => { btn.disabled = false; btn.textContent = 'CRIAR CONTA'; });
 }
