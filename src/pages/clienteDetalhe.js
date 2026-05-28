@@ -20,6 +20,8 @@ function renderClienteDetalhe() {
 async function loadClienteDetalhe() {
   if (!currentState.currentClientId) return;
 
+  var apptId = currentState.currentClientId;
+
   const { data: appt, error } = await sb
     .from('appointments')
     .select(`
@@ -121,11 +123,11 @@ async function loadClienteDetalhe() {
 
     <div style="padding:0 20px 24px;display:flex;flex-direction:column;gap:10px;">
       ${appt.status === 'pendente' ? `
-        <button class="btn" onclick="updateApptStatus('${appt.id}','confirmado')">✅ CONFIRMAR</button>
-        <button class="btn-outline" onclick="updateApptStatus('${appt.id}','cancelado')" style="border-color:#ff4444;color:#ff4444;">✕ CANCELAR</button>
+        <button class="btn" onclick="updateApptStatus(${appt.id},'confirmado')">✅ CONFIRMAR</button>
+        <button class="btn-outline" onclick="updateApptStatus(${appt.id},'cancelado')" style="border-color:#ff4444;color:#ff4444;">✕ CANCELAR</button>
       ` : appt.status === 'confirmado' ? `
-        <button class="btn" onclick="updateApptStatus('${appt.id}','concluido')">✔️ MARCAR CONCLUÍDO</button>
-        <button class="btn-outline" onclick="updateApptStatus('${appt.id}','cancelado')" style="border-color:#ff4444;color:#ff4444;">✕ CANCELAR</button>
+        <button class="btn" onclick="updateApptStatus(${appt.id},'concluido')">✔️ MARCAR CONCLUÍDO</button>
+        <button class="btn-outline" onclick="updateApptStatus(${appt.id},'cancelado')" style="border-color:#ff4444;color:#ff4444;">✕ CANCELAR</button>
       ` : `
         <button class="btn-outline" disabled style="opacity:.4;">Atendimento ${statusLabel[appt.status]||appt.status}</button>
       `}
@@ -133,14 +135,21 @@ async function loadClienteDetalhe() {
 }
 
 async function updateApptStatus(id, newStatus) {
-  const { error } = await sb
+  var btn = event && event.target ? event.target : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Aguardando...'; }
+
+  var result = await sb
     .from('appointments')
     .update({ status: newStatus })
     .eq('id', id);
 
-  if (!error) {
-    await loadClienteDetalhe();
+  if (result.error) {
+    alert('Erro ao atualizar: ' + result.error.message);
+    if (btn) { btn.disabled = false; }
+    return;
   }
+
+  await loadClienteDetalhe();
 }
 
 function startChatWithClient(userId, name, phone) {
