@@ -1,8 +1,44 @@
 var APP_DATA = {
   barbers: [
-    { id:1, name:'Leonardo',  nick:'@cortsleo01',      specialty:'Cortes e Penteados', rating:'5,0', reviews:0, stars:5, photo:'LEO_PHOTO_URL',   phone:'+5511919021251', instagram:'https://www.instagram.com/cortsleo01',      bio:'Especialista em cortes modernos e penteados.' },
-    { id:2, name:'Gabriel',   nick:'@capital_7_letra', specialty:'Degradê e Barba',    rating:'5,0', reviews:0, stars:5, photo:'BIEL_PHOTO_URL',  phone:'+5511919021251', instagram:'https://www.instagram.com/capital_7_letra', bio:'Especialista em degradê e acabamentos precisos.' },
-    { id:3, name:'Pumpe',     nick:'@pumpecorts',      specialty:'Cortes e Navalhado', rating:'5,0', reviews:0, stars:5, photo:'PUMPE_PHOTO_URL', phone:'+5511919021251', instagram:'https://www.instagram.com/pumpecorts',      bio:'Especialista em cortes navalhados e modernos.' }
+    {
+      id: 1,
+      name: 'Leonardo',
+      nick: '@cortsleo01',
+      specialty: 'Cortes e Penteados',
+      rating: '5,0',
+      reviews: 0,
+      stars: 5,
+      photo: 'https://mkbsbniaukramqzzbzpt.supabase.co/storage/v1/object/public/avatars/perfil%20leo.jpg',
+      phone: '+5511919021251',
+      instagram: 'https://www.instagram.com/cortsleo01',
+      bio: 'Especialista em cortes modernos e penteados.'
+    },
+    {
+      id: 2,
+      name: 'Gabriel',
+      nick: '@capital_7_letra',
+      specialty: 'Degradê e Barba',
+      rating: '5,0',
+      reviews: 0,
+      stars: 5,
+      photo: 'https://mkbsbniaukramqzzbzpt.supabase.co/storage/v1/object/public/avatars/perfil%20biel.jpeg',
+      phone: '+5511919021251',
+      instagram: 'https://www.instagram.com/capital_7_letra',
+      bio: 'Especialista em degradê e acabamentos precisos.'
+    },
+    {
+      id: 3,
+      name: 'Pumpe',
+      nick: '@pumpecorts',
+      specialty: 'Cortes e Navalhado',
+      rating: '5,0',
+      reviews: 0,
+      stars: 5,
+      photo: 'https://mkbsbniaukramqzzbzpt.supabase.co/storage/v1/object/public/avatars/perfil%20pumpe.jpeg',
+      phone: '+5511919021251',
+      instagram: 'https://www.instagram.com/pumpecorts',
+      bio: 'Especialista em cortes navalhados e modernos.'
+    }
   ],
   services: [
     { id:1,  name:'Corte Social',               category:'corte',    price:30,   duration:'30 min', badge:'',              icon:'✂️' },
