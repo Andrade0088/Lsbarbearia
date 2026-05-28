@@ -8,8 +8,6 @@ let authState = {
 
 // Inicializa sessão ao carregar o app
 async function initAuth() {
-  showLoadingScreen();
-
   const { data: { session } } = await sb.auth.getSession();
 
   if (session?.user) {
