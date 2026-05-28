@@ -383,3 +383,7 @@ html,body{height:100%;background:var(--dark);color:white;overflow-x:hidden;}
   .hero-text h2{font-size:32px;line-height:40px;}
   .logo h1{font-size:28px;}
 }
+
+#screen-login {
+  padding-bottom: 0 !important;
+}

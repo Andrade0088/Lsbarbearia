@@ -2,7 +2,7 @@ function renderLogin() {
   return `
   <div class="screen active" id="screen-login" style="padding-bottom:0;">
     <div style="min-height:100vh;display:flex;flex-direction:column;
-      background:linear-gradient(160deg,#050816 60%,rgba(255,30,30,.12) 100%);">
+      background:linear-gradient(160deg,#050816 60%,rgba(255,30,30,.12) 100%);overflow-y:auto;">
 
       <!-- Logo -->
       <div style="text-align:center;padding:60px 24px 32px;">
