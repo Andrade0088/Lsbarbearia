@@ -44,7 +44,11 @@ function renderScreen(name) {
   currentScreen = name;
 
   const nav = document.getElementById('bottomNav');
+if (!nav) {
+  document.getElementById('app').insertAdjacentHTML('beforeend', SCREENS[name]());
+} else {
   nav.insertAdjacentHTML('beforebegin', SCREENS[name]());
+}
 
   const el = document.getElementById('screen-' + name);
   if (el) { el.classList.add('active'); window.scrollTo(0,0); }
