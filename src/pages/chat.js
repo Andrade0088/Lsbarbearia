@@ -58,6 +58,14 @@ let msgSubscription = null;
 async function loadChats() {
   if (!authState.user) return;
 
+  // Se veio de clienteDetalhe, abre direto a conversa
+  if (currentState.pendingChat) {
+    var pc = currentState.pendingChat;
+    currentState.pendingChat = null;
+    setTimeout(function() { openConvo(pc.userId, pc.name, pc.phone, pc.role); }, 100);
+    return;
+  }
+
   // Busca todas as mensagens do usuário
   const { data, error } = await sb
     .from('messages')

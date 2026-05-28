@@ -144,6 +144,6 @@ async function updateApptStatus(id, newStatus) {
 }
 
 function startChatWithClient(userId, name, phone) {
-  openConvo(userId, name, phone, 'cliente');
+  currentState.pendingChat = { userId: userId, name: name, phone: phone, role: 'cliente' };
   goTo('chat');
 }
