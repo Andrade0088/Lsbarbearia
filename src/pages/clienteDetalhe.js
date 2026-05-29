@@ -18,6 +18,7 @@ function renderClienteDetalhe() {
 }
 
 var comandaItems = {};
+var descontoState = {}; // { clientId: percentual }
 
 async function loadClienteDetalhe() {
   if (!currentState.currentClientId) return;
@@ -73,6 +74,15 @@ async function loadClienteDetalhe() {
       '</div>';
   });
 
+  // Resumo dos serviços para o box de total
+  var servicosResumo = grupo.map(function(a) {
+    var nome = (a.services && a.services.name) ? a.services.name : (a.notes && a.notes.indexOf('Consumo') < 0 ? a.notes : 'Serviço');
+    var preco = parseFloat(a.price) > 0 ? parseFloat(a.price) : parseFloat((a.services && a.services.price) || 0);
+    return '<div style="display:flex;justify-content:space-between;padding:3px 0;">' +
+      '<span style="font-size:13px;color:var(--text-muted);">' + nome + '</span>' +
+      '<span style="font-size:13px;font-weight:600;">R$ ' + preco.toFixed(0) + '</span></div>';
+  }).join('');
+
   var statusLabel = { confirmado:'Confirmado', pendente:'Pendente', concluido:'Concluído', cancelado:'Cancelado', pago:'Pago' };
   var statusClass = { confirmado:'status-confirmado', pendente:'status-pendente', concluido:'status-concluido', cancelado:'status-pendente', pago:'status-confirmado' };
 
@@ -95,6 +105,9 @@ async function loadClienteDetalhe() {
   });
 
   var totalGeral = totalServico + totalComanda;
+  var descontoAtivo = descontoState[clientId] || 0;
+  var valorDesconto = totalGeral * (descontoAtivo / 100);
+  var totalFinal = totalGeral - valorDesconto;
 
   var extraHtml = extras.map(function(e) {
     var qty = (comanda[e.id] && comanda[e.id].qty) || 0;
@@ -192,14 +205,32 @@ async function loadClienteDetalhe() {
 
     <!-- Total e pagamento -->
     <div style="margin:0 20px 20px;background:var(--card);border-radius:14px;padding:14px 16px;border:1px solid rgba(255,30,30,.3);">
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-        <span style="font-size:13px;color:var(--text-muted);">Serviço(s)</span>
+      ${servicosResumo}
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;padding-top:4px;border-top:0.5px solid rgba(255,255,255,.06);">
+        <span style="font-size:13px;color:var(--text-muted);">Subtotal serviços</span>
         <span style="font-size:13px;font-weight:600;">R$ ${totalServico.toFixed(0)}</span>
       </div>
       ${totalComanda > 0 ? '<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13px;color:var(--text-muted);">Consumo</span><span style="font-size:13px;font-weight:600;">R$ ' + totalComanda.toFixed(0) + '</span></div>' : ''}
+
+      <!-- Desconto -->
+      <div style="margin:8px 0;padding:10px 0;border-top:0.5px solid rgba(255,255,255,.08);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${descontoAtivo > 0 ? '8' : '0'}px;">
+          <span style="font-size:12px;color:var(--text-muted);">🏷️ Desconto</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input id="desconto-input" type="number" min="0" max="100" placeholder="0"
+              value="${descontoAtivo > 0 ? descontoAtivo : ''}"
+              oninput="aplicarDesconto('${clientId}', this.value)"
+              style="width:52px;padding:4px 8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+              border-radius:8px;color:white;font-size:13px;font-weight:700;text-align:center;outline:none;">
+            <span style="font-size:13px;color:var(--text-muted);">%</span>
+          </div>
+        </div>
+        ' + (descontoAtivo > 0 ? '<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="font-size:12px;color:#4ade80;">Desconto (' + descontoAtivo + '%)</span><span style="font-size:12px;font-weight:700;color:#4ade80;">− R$ ' + valorDesconto.toFixed(0) + '</span></div>' : '') + '
+      </div>
+
       <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:0.5px solid rgba(255,255,255,.08);">
         <span style="font-size:15px;font-weight:700;">TOTAL</span>
-        <span style="font-size:20px;font-weight:800;color:var(--red);">R$ ${totalGeral.toFixed(0)}</span>
+        <span style="font-size:20px;font-weight:800;color:var(--red);">R$ ${totalFinal.toFixed(0)}</span>
       </div>
     </div>
 
@@ -211,7 +242,7 @@ async function loadClienteDetalhe() {
         <button class="btn" onclick="updateApptStatus(${appt.id},'confirmado')">✅ CONFIRMAR AGENDAMENTO</button>
         <button class="btn-outline" onclick="updateApptStatus(${appt.id},'cancelado')" style="border-color:#ff4444;color:#ff4444;">✕ CANCELAR</button>
       ` : appt.status === 'confirmado' ? `
-        <button class="btn" onclick="confirmarPagamento(${appt.id},'${clientId}')">💰 CONFIRMAR PAGAMENTO (R$ ${totalGeral.toFixed(0)})</button>
+        <button class="btn" onclick="confirmarPagamento(${appt.id},'${clientId}')">💰 CONFIRMAR PAGAMENTO (R$ ${totalFinal.toFixed(0)})</button>
         <button class="btn-outline" onclick="updateApptStatus(${appt.id},'cancelado')" style="border-color:#ff4444;color:#ff4444;">✕ CANCELAR</button>
       ` : appt.status === 'concluido' || appt.status === 'pago' ? `
         <button class="btn-outline" disabled style="opacity:.4;">✔️ Atendimento concluído</button>
@@ -219,6 +250,12 @@ async function loadClienteDetalhe() {
         <button class="btn-outline" disabled style="opacity:.4;">${statusLabel[appt.status]||appt.status}</button>
       `}
     </div>`;
+}
+
+function aplicarDesconto(clientId, val) {
+  var pct = Math.min(100, Math.max(0, parseFloat(val) || 0));
+  descontoState[clientId] = pct;
+  loadClienteDetalhe();
 }
 
 function alterarComanda(clientId, itemId, name, price, delta) {
@@ -239,14 +276,20 @@ async function confirmarPagamento(apptId, clientId) {
   var totalComanda = 0;
   Object.values(comanda).forEach(function(i){ totalComanda += i.price * i.qty; });
 
+  var desconto = descontoState[clientId] || 0;
+  var notas = [];
+  if (totalComanda > 0) notas.push('Consumo extra: R$ ' + totalComanda.toFixed(0));
+  if (desconto > 0) notas.push('Desconto: ' + desconto + '%');
+
   var result = await sb.from('appointments').update({
     status: 'concluido',
-    notes: totalComanda > 0 ? 'Consumo extra: R$ ' + totalComanda.toFixed(0) : null
+    notes: notas.length > 0 ? notas.join(' | ') : null
   }).eq('id', apptId);
 
   if (result.error) { alert('Erro: ' + result.error.message); return; }
 
   comandaItems[clientId] = {};
+  descontoState[clientId] = 0;
   await loadClienteDetalhe();
 }
 
