@@ -22,6 +22,7 @@ var comandaItems = {};
 async function loadClienteDetalhe() {
   if (!currentState.currentClientId) return;
 
+  // Busca TODOS os agendamentos do mesmo cliente/barbeiro/data/hora (múltiplos serviços)
   var result = await sb
     .from('appointments')
     .select('*, services(name,price,duration_min), profiles!appointments_client_id_fkey(id,name,nick,phone,avatar_url)')
@@ -39,6 +40,38 @@ async function loadClienteDetalhe() {
   var clientId = client ? client.id : 'unknown';
 
   if (!comandaItems[clientId]) comandaItems[clientId] = {};
+
+  // Busca todos agendamentos do mesmo grupo (mesmo client/barber/date/time)
+  var grupoResult = await sb
+    .from('appointments')
+    .select('*, services(name,price,duration_min)')
+    .eq('client_id', clientId)
+    .eq('barber_id', authState.user.id)
+    .eq('date', appt.date)
+    .eq('time', appt.time)
+    .in('status', ['pendente','confirmado','concluido','pago']);
+
+  var grupo = (grupoResult.data && grupoResult.data.length > 0) ? grupoResult.data : [appt];
+
+  // Monta lista de serviços do agendamento
+  var servicosHtml = '';
+  var totalServico = 0;
+
+  grupo.forEach(function(a) {
+    var nome = (a.services && a.services.name) ? a.services.name : (a.notes && a.notes.indexOf('Consumo') < 0 ? a.notes : 'Serviço');
+    // Prioriza price da row (sempre gravado no insert), fallback pro join
+    var preco = parseFloat(a.price) > 0 ? parseFloat(a.price) : parseFloat((a.services && a.services.price) || 0);
+    var dur = (a.services && a.services.duration_min) ? a.services.duration_min : null;
+    totalServico += preco;
+    servicosHtml += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid rgba(255,255,255,.06);">' +
+      '<div style="display:flex;align-items:center;gap:8px;">' +
+      '<span style="font-size:16px;">✂️</span>' +
+      '<div><p style="font-size:14px;font-weight:600;">' + nome + '</p>' +
+      (dur ? '<p style="font-size:11px;color:var(--text-muted);">' + dur + ' min</p>' : '') +
+      '</div></div>' +
+      '<p style="font-size:15px;font-weight:800;color:var(--red);">R$ ' + preco.toFixed(0) + '</p>' +
+      '</div>';
+  });
 
   var statusLabel = { confirmado:'Confirmado', pendente:'Pendente', concluido:'Concluído', cancelado:'Cancelado', pago:'Pago' };
   var statusClass = { confirmado:'status-confirmado', pendente:'status-pendente', concluido:'status-concluido', cancelado:'status-pendente', pago:'status-confirmado' };
@@ -61,7 +94,6 @@ async function loadClienteDetalhe() {
     totalComanda += (item.price || 0) * item.qty;
   });
 
-  var totalServico = parseFloat(appt.services ? appt.services.price : 0) || 0;
   var totalGeral = totalServico + totalComanda;
 
   var extraHtml = extras.map(function(e) {
@@ -104,10 +136,12 @@ async function loadClienteDetalhe() {
     histHtml = '<div class="history-section">' +
       '<p class="history-title">HISTÓRICO COM VOCÊ</p>' +
       histResult.data.map(function(h) {
+        var hNome = (h.services && h.services.name) ? h.services.name : 'Serviço';
+        var hPreco = (h.services && h.services.price) ? parseFloat(h.services.price) : parseFloat(h.price||0);
         return '<div class="history-item">' +
-          '<div class="hi-left"><p>' + (h.services ? h.services.name : 'Serviço') + '</p>' +
+          '<div class="hi-left"><p>' + hNome + '</p>' +
           '<span>' + new Date(h.date+'T00:00:00').toLocaleDateString('pt-BR') + ' · ' + (h.time||'').slice(0,5) + '</span></div>' +
-          '<div class="hi-price">R$ ' + parseFloat(h.services ? h.services.price : 0).toFixed(0) + '</div>' +
+          '<div class="hi-price">R$ ' + hPreco.toFixed(0) + '</div>' +
           '</div>';
       }).join('') +
       '</div>';
@@ -127,15 +161,8 @@ async function loadClienteDetalhe() {
     <!-- Agendamento -->
     <div class="appt-detail-box">
       <div class="adb-header">AGENDAMENTO</div>
-      <div class="appt-detail-row">
-        <span class="adr-icon">✂️</span>
-        <div class="adr-info"><p>${appt.services ? appt.services.name : 'Serviço'}</p><span>Serviço</span></div>
-        <div style="margin-left:auto;text-align:right;">
-          <p style="font-size:15px;font-weight:800;color:var(--red);">R$ ${totalServico.toFixed(0)}</p>
-          <span style="font-size:11px;color:var(--text-muted);">${appt.services ? appt.services.duration_min : 0} min</span>
-        </div>
-      </div>
-      <div class="appt-detail-row">
+      ${servicosHtml}
+      <div class="appt-detail-row" style="margin-top:8px;">
         <span class="adr-icon">📅</span>
         <div class="adr-info"><p>${dateStr}</p><span>Data</span></div>
         <div style="margin-left:auto;"><p style="font-size:18px;font-weight:800;">${(appt.time||'').slice(0,5)}</p></div>
@@ -166,7 +193,7 @@ async function loadClienteDetalhe() {
     <!-- Total e pagamento -->
     <div style="margin:0 20px 20px;background:var(--card);border-radius:14px;padding:14px 16px;border:1px solid rgba(255,30,30,.3);">
       <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-        <span style="font-size:13px;color:var(--text-muted);">Serviço</span>
+        <span style="font-size:13px;color:var(--text-muted);">Serviço(s)</span>
         <span style="font-size:13px;font-weight:600;">R$ ${totalServico.toFixed(0)}</span>
       </div>
       ${totalComanda > 0 ? '<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13px;color:var(--text-muted);">Consumo</span><span style="font-size:13px;font-weight:600;">R$ ' + totalComanda.toFixed(0) + '</span></div>' : ''}
