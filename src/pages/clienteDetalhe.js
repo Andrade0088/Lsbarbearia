@@ -60,17 +60,19 @@ async function loadClienteDetalhe() {
 
   grupo.forEach(function(a) {
     var nome = (a.services && a.services.name) ? a.services.name : (a.notes && a.notes.indexOf('Consumo') < 0 ? a.notes : 'Serviço');
-    // Prioriza price da row (sempre gravado no insert), fallback pro join
     var preco = parseFloat(a.price) > 0 ? parseFloat(a.price) : parseFloat((a.services && a.services.price) || 0);
     var dur = (a.services && a.services.duration_min) ? a.services.duration_min : null;
     totalServico += preco;
-    servicosHtml += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid rgba(255,255,255,.06);">' +
-      '<div style="display:flex;align-items:center;gap:8px;">' +
-      '<span style="font-size:16px;">✂️</span>' +
-      '<div><p style="font-size:14px;font-weight:600;">' + nome + '</p>' +
-      (dur ? '<p style="font-size:11px;color:var(--text-muted);">' + dur + ' min</p>' : '') +
-      '</div></div>' +
-      '<p style="font-size:15px;font-weight:800;color:var(--red);">R$ ' + preco.toFixed(0) + '</p>' +
+    servicosHtml +=
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid rgba(255,255,255,.06);">' +
+        '<div style="display:flex;align-items:center;gap:10px;">' +
+          '<div style="width:34px;height:34px;border-radius:10px;background:rgba(255,30,30,.1);border:1px solid rgba(255,30,30,.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">✂️</div>' +
+          '<div>' +
+            '<p style="font-size:14px;font-weight:700;">' + nome + '</p>' +
+            (dur ? '<p style="font-size:11px;color:var(--text-muted);">⏱ ' + dur + ' min</p>' : '') +
+          '</div>' +
+        '</div>' +
+        '<p style="font-size:15px;font-weight:800;color:var(--red);">R$ ' + preco.toFixed(0) + '</p>' +
       '</div>';
   });
 
@@ -217,16 +219,11 @@ async function loadClienteDetalhe() {
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <span style="font-size:12px;color:var(--text-muted);">🏷️ Desconto</span>
           <div style="display:flex;align-items:center;gap:6px;">
-            <input id="desconto-input" type="number" min="0" max="99" maxlength="2" placeholder="0"
-              value="${descontoAtivo > 0 ? descontoAtivo : ''}"
-              onblur="aplicarDesconto('${clientId}', this.value)"
-              onkeydown="if(event.key==='Enter'){this.blur();}"
-              style="width:52px;padding:4px 8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);"
-              + "border-radius:8px;color:white;font-size:15px;font-weight:700;text-align:center;outline:none;">
+            <input id="desconto-input" type="number" min="0" max="99" placeholder="0" value="${descontoAtivo > 0 ? descontoAtivo : ''}" onblur="aplicarDesconto('${clientId}',this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="width:52px;padding:4px 8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:white;font-size:15px;font-weight:700;text-align:center;outline:none;">
             <span style="font-size:13px;color:var(--text-muted);">%</span>
           </div>
         </div>
-        ' + (descontoAtivo > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px 0 0;"><span style="font-size:13px;color:#4ade80;">Desconto (' + descontoAtivo + '%)</span><span style="font-size:13px;font-weight:700;color:#4ade80;">− R$ ' + valorDesconto.toFixed(0) + '</span></div>' : '') + '
+        ${descontoAtivo > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px 0 0;"><span style="font-size:13px;color:#4ade80;">Desconto (' + descontoAtivo + '%)</span><span style="font-size:13px;font-weight:700;color:#4ade80;">− R$ ' + valorDesconto.toFixed(0) + '</span></div>' : ''}
       </div>
 
       <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:0.5px solid rgba(255,255,255,.08);">
