@@ -214,18 +214,19 @@ async function loadClienteDetalhe() {
 
       <!-- Desconto -->
       <div style="margin:8px 0;padding:10px 0;border-top:0.5px solid rgba(255,255,255,.08);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${descontoAtivo > 0 ? '8' : '0'}px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
           <span style="font-size:12px;color:var(--text-muted);">🏷️ Desconto</span>
           <div style="display:flex;align-items:center;gap:6px;">
-            <input id="desconto-input" type="number" min="0" max="100" placeholder="0"
+            <input id="desconto-input" type="number" min="0" max="99" maxlength="2" placeholder="0"
               value="${descontoAtivo > 0 ? descontoAtivo : ''}"
-              oninput="aplicarDesconto('${clientId}', this.value)"
-              style="width:52px;padding:4px 8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
-              border-radius:8px;color:white;font-size:13px;font-weight:700;text-align:center;outline:none;">
+              onblur="aplicarDesconto('${clientId}', this.value)"
+              onkeydown="if(event.key==='Enter'){this.blur();}"
+              style="width:52px;padding:4px 8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);"
+              + "border-radius:8px;color:white;font-size:15px;font-weight:700;text-align:center;outline:none;">
             <span style="font-size:13px;color:var(--text-muted);">%</span>
           </div>
         </div>
-        ' + (descontoAtivo > 0 ? '<div style="display:flex;justify-content:space-between;padding:3px 0;"><span style="font-size:12px;color:#4ade80;">Desconto (' + descontoAtivo + '%)</span><span style="font-size:12px;font-weight:700;color:#4ade80;">− R$ ' + valorDesconto.toFixed(0) + '</span></div>' : '') + '
+        ' + (descontoAtivo > 0 ? '<div style="display:flex;justify-content:space-between;padding:6px 0 0;"><span style="font-size:13px;color:#4ade80;">Desconto (' + descontoAtivo + '%)</span><span style="font-size:13px;font-weight:700;color:#4ade80;">− R$ ' + valorDesconto.toFixed(0) + '</span></div>' : '') + '
       </div>
 
       <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:0.5px solid rgba(255,255,255,.08);">
