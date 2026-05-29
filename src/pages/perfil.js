@@ -70,7 +70,7 @@ function renderPerfil() {
         <span style="color:rgba(255,255,255,.25);">›</span>
       </div>
 
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+      <div onclick="mostrarPagamentos()" style="display:flex;align-items:center;justify-content:space-between;padding:15px 0;border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;">
         <div style="display:flex;align-items:center;gap:14px;">
           <span style="font-size:18px;width:34px;text-align:center;">💳</span>
           <span style="font-size:14px;font-weight:500;">Formas de pagamento aceitas</span>
@@ -137,4 +137,56 @@ async function loadNextBooking() {
     '</div>' +
     '<span class="cli-status ' + statusClass + '">' + statusLabel + '</span>' +
     '</div>';
+}
+
+function mostrarPagamentos() {
+  var existing = document.getElementById('pagamentos-modal');
+  if (existing) existing.parentNode.removeChild(existing);
+
+  var modal = document.createElement('div');
+  modal.id = 'pagamentos-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;display:flex;align-items:flex-end;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:#0d1329;border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;
+      border-top:1px solid rgba(255,255,255,.1);">
+      <div style="width:40px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 20px;"></div>
+      <h3 style="font-size:16px;font-weight:700;text-align:center;margin-bottom:20px;">💳 Formas de Pagamento</h3>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(255,255,255,.05);border-radius:12px;border:1px solid rgba(255,255,255,.08);">
+          <span style="font-size:26px;">💵</span>
+          <div><p style="font-size:14px;font-weight:600;">Dinheiro</p><p style="font-size:12px;color:var(--text-muted);">Pagamento em espécie</p></div>
+          <span style="margin-left:auto;color:#00c864;font-size:18px;">✓</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(255,255,255,.05);border-radius:12px;border:1px solid rgba(255,255,255,.08);">
+          <span style="font-size:26px;">📱</span>
+          <div><p style="font-size:14px;font-weight:600;">Pix</p><p style="font-size:12px;color:var(--text-muted);">Transferência instantânea</p></div>
+          <span style="margin-left:auto;color:#00c864;font-size:18px;">✓</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(255,255,255,.05);border-radius:12px;border:1px solid rgba(255,255,255,.08);">
+          <span style="font-size:26px;">💳</span>
+          <div><p style="font-size:14px;font-weight:600;">Cartão de Débito</p><p style="font-size:12px;color:var(--text-muted);">Visa, Mastercard e outros</p></div>
+          <span style="margin-left:auto;color:#00c864;font-size:18px;">✓</span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(255,255,255,.05);border-radius:12px;border:1px solid rgba(255,255,255,.08);">
+          <span style="font-size:26px;">💳</span>
+          <div><p style="font-size:14px;font-weight:600;">Cartão de Crédito</p><p style="font-size:12px;color:var(--text-muted);">Visa, Mastercard e outros</p></div>
+          <span style="margin-left:auto;color:#00c864;font-size:18px;">✓</span>
+        </div>
+
+      </div>
+
+      <button onclick="document.getElementById('pagamentos-modal').remove()"
+        style="width:100%;padding:14px;background:var(--red);border:none;border-radius:12px;
+        color:white;font-size:14px;font-weight:700;cursor:pointer;">Fechar</button>
+    </div>`;
+
+  modal.onclick = function(e) {
+    if (e.target === modal) modal.parentNode.removeChild(modal);
+  };
+  document.body.appendChild(modal);
 }
