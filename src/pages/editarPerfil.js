@@ -52,9 +52,9 @@ function renderEditarPerfil() {
             onmousedown="startDrag(event)" ontouchstart="startDrag(event)">
         </div>
         <div style="display:flex;gap:8px;margin-bottom:12px;">
-          <button onclick="zoomCrop(-0.1)" style="padding:8px 16px;background:var(--card);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:white;cursor:pointer;font-size:16px;">−</button>
-          <span style="color:var(--text-muted);font-size:12px;padding:8px;">Zoom</span>
-          <button onclick="zoomCrop(0.1)" style="padding:8px 16px;background:var(--card);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:white;cursor:pointer;font-size:16px;">+</button>
+          <button onclick="zoomCrop(-0.15)" style="padding:8px 16px;background:var(--card);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:white;cursor:pointer;font-size:18px;font-weight:700;">−</button>
+          <span style="color:var(--text-muted);font-size:12px;padding:8px 4px;">Zoom / 2 dedos</span>
+          <button onclick="zoomCrop(0.15)" style="padding:8px 16px;background:var(--card);border:1px solid rgba(255,255,255,.2);border-radius:10px;color:white;cursor:pointer;font-size:18px;font-weight:700;">+</button>
         </div>
         <div style="display:flex;gap:10px;width:100%;max-width:280px;">
           <button onclick="fecharCrop()" style="flex:1;padding:12px;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:12px;color:white;cursor:pointer;font-size:13px;font-weight:700;">Cancelar</button>
@@ -94,36 +94,76 @@ var cropState = { scale:1, x:0, y:0, dragging:false, startX:0, startY:0, lastX:0
 function abrirCropFoto(input) {
   if (!input.files || !input.files[0]) return;
   var file = input.files[0];
+
+  // Usa FileReader para evitar problemas de CORS
   var reader = new FileReader();
   reader.onload = function(e) {
     var modal = document.getElementById('crop-modal');
     var img   = document.getElementById('crop-img');
     if (!modal || !img) return;
-    img.src = e.target.result;
-    img.onload = function() {
-      cropState.scale = 280 / Math.min(img.naturalWidth, img.naturalHeight);
-      cropState.x = 0; cropState.y = 0;
-      img.style.width  = (img.naturalWidth  * cropState.scale) + 'px';
-      img.style.height = (img.naturalHeight * cropState.scale) + 'px';
-      img.style.left   = cropState.x + 'px';
-      img.style.top    = cropState.y + 'px';
+
+    // Cria nova imagem para garantir que carrega
+    var tempImg = new Image();
+    tempImg.onload = function() {
+      img.src = e.target.result;
+      img.onload = function() {
+        // Calcula escala inicial para preencher o círculo de 280px
+        var minDim = Math.min(img.naturalWidth, img.naturalHeight);
+        cropState.scale = 280 / minDim;
+        cropState.x = 0;
+        cropState.y = 0;
+        img.style.width  = (img.naturalWidth  * cropState.scale) + 'px';
+        img.style.height = (img.naturalHeight * cropState.scale) + 'px';
+        img.style.left   = cropState.x + 'px';
+        img.style.top    = cropState.y + 'px';
+      };
     };
+    tempImg.src = e.target.result;
     modal.style.display = 'flex';
   };
   reader.readAsDataURL(file);
 }
 
 function zoomCrop(delta) {
-  cropState.scale = Math.max(0.5, Math.min(4, cropState.scale + delta));
   var img = document.getElementById('crop-img');
-  if (img) {
-    img.style.width  = (img.naturalWidth  * cropState.scale) + 'px';
-    img.style.height = (img.naturalHeight * cropState.scale) + 'px';
-  }
+  if (!img) return;
+  cropState.scale = Math.max(0.3, Math.min(5, cropState.scale + delta));
+  img.style.width  = (img.naturalWidth  * cropState.scale) + 'px';
+  img.style.height = (img.naturalHeight * cropState.scale) + 'px';
 }
 
 function startDrag(e) {
   e.preventDefault();
+
+  // Pinch to zoom (2 dedos)
+  if (e.touches && e.touches.length === 2) {
+    var t1 = e.touches[0];
+    var t2 = e.touches[1];
+    cropState.pinchDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+    cropState.pinchScale = cropState.scale;
+
+    function onPinch(ev) {
+      if (ev.touches.length < 2) return;
+      ev.preventDefault();
+      var d = Math.hypot(ev.touches[1].clientX - ev.touches[0].clientX, ev.touches[1].clientY - ev.touches[0].clientY);
+      var newScale = Math.max(0.3, Math.min(5, cropState.pinchScale * (d / cropState.pinchDist)));
+      cropState.scale = newScale;
+      var img = document.getElementById('crop-img');
+      if (img) {
+        img.style.width  = (img.naturalWidth  * newScale) + 'px';
+        img.style.height = (img.naturalHeight * newScale) + 'px';
+      }
+    }
+    function onPinchEnd() {
+      document.removeEventListener('touchmove', onPinch);
+      document.removeEventListener('touchend',  onPinchEnd);
+    }
+    document.addEventListener('touchmove', onPinch, { passive: false });
+    document.addEventListener('touchend',  onPinchEnd);
+    return;
+  }
+
+  // Drag (1 dedo ou mouse)
   cropState.dragging = true;
   var touch = e.touches ? e.touches[0] : e;
   cropState.startX = touch.clientX - cropState.x;
@@ -159,32 +199,52 @@ function fecharCrop() {
 function confirmarCrop() {
   var img = document.getElementById('crop-img');
   if (!img) return;
+
   var size = 280;
   var canvas = document.createElement('canvas');
-  canvas.width = size; canvas.height = size;
+  canvas.width = size;
+  canvas.height = size;
   var ctx = canvas.getContext('2d');
-  ctx.beginPath(); ctx.arc(size/2, size/2, size/2, 0, Math.PI*2); ctx.clip();
 
-  var container = img.parentElement.getBoundingClientRect();
-  var imgRect   = img.getBoundingClientRect();
-  var offsetX   = imgRect.left - container.left;
-  var offsetY   = imgRect.top  - container.top;
-  var scaleX    = img.naturalWidth  / img.offsetWidth;
-  var scaleY    = img.naturalHeight / img.offsetHeight;
+  // Círculo de recorte
+  ctx.beginPath();
+  ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
+  ctx.clip();
 
-  ctx.drawImage(img,
-    -offsetX * scaleX, -offsetY * scaleY,
-    img.naturalWidth, img.naturalHeight
+  // Pega o container circular
+  var container = img.parentElement;
+  var containerRect = container.getBoundingClientRect();
+  var imgRect = img.getBoundingClientRect();
+
+  // Calcula offset da imagem dentro do container
+  var offsetX = imgRect.left - containerRect.left;
+  var offsetY = imgRect.top  - containerRect.top;
+
+  // Escala: pixels reais da imagem / pixels exibidos
+  var displayW = img.offsetWidth;
+  var displayH = img.offsetHeight;
+  var scaleX = img.naturalWidth  / displayW;
+  var scaleY = img.naturalHeight / displayH;
+
+  // Desenha a parte visível da imagem no canvas
+  ctx.drawImage(
+    img,
+    -offsetX * scaleX,
+    -offsetY * scaleY,
+    displayW * scaleX,
+    displayH * scaleY,
+    0, 0, size, size
   );
 
   fecharCrop();
 
   canvas.toBlob(function(blob) {
+    if (!blob) { alert('Erro ao processar imagem. Tente novamente.'); return; }
     cropState.blob = blob;
     var url = URL.createObjectURL(blob);
     var preview = document.getElementById('edit-avatar-preview');
-    if (preview) preview.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;">';
-  }, 'image/jpeg', 0.85);
+    if (preview) preview.innerHTML = '<img src="' + url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+  }, 'image/jpeg', 0.9);
 }
 
 // ── Upload e Salvar ───────────────────────────────────────
