@@ -81,7 +81,11 @@ async function loadBarberAppointments() {
     .order('date', { ascending: true })
     .order('time', { ascending: true });
 
-  if (filter !== 'todos') query = query.eq('status', filter);
+  if (filter === 'concluido') {
+    query = query.in('status', ['concluido','pago']);
+  } else if (filter !== 'todos') {
+    query = query.eq('status', filter);
+  }
 
   const { data, error } = await query;
 
@@ -118,17 +122,27 @@ async function loadBarberAppointments() {
   if (st) st.textContent = data.length;
   if (sp) sp.textContent = pendentes;
 
-  // Agrupa por data
-  const groups = {};
-  data.forEach(a => {
-    if (!groups[a.date]) groups[a.date] = [];
-    groups[a.date].push(a);
-  });
-
   const statusLabel = { confirmado:'Confirmado', pendente:'Pendente', concluido:'Concluído', cancelado:'Cancelado' };
   const statusClass = { confirmado:'status-confirmado', pendente:'status-pendente', concluido:'status-concluido', cancelado:'status-pendente' };
 
-  el.innerHTML = Object.entries(groups).map(([date, appts]) => {
+  // Agrupa por data → dentro de cada data, agrupa por client+time (um card por agendamento)
+  const groups = {};
+  data.forEach(a => {
+    if (!groups[a.date]) groups[a.date] = {};
+    const key = (a.profiles?.id || 'x') + '_' + a.time;
+    if (!groups[a.date][key]) {
+      groups[a.date][key] = { apptId: a.id, client: a.profiles, date: a.date, time: a.time, status: a.status, services: [] };
+    }
+    if (!(a.notes && (a.notes.indexOf('Consumo') >= 0 || a.notes.indexOf('Desconto') >= 0))) {
+      groups[a.date][key].services.push(a.services?.name || 'Serviço');
+    }
+    const priority = { pendente:3, confirmado:2, concluido:1, cancelado:0 };
+    if ((priority[a.status]||0) > (priority[groups[a.date][key].status]||0)) {
+      groups[a.date][key].status = a.status;
+    }
+  });
+
+  el.innerHTML = Object.entries(groups).map(([date, cards]) => {
     const d = new Date(date + 'T00:00:00');
     const dateStr = d.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'2-digit' });
     const isToday = date === today;
@@ -137,33 +151,34 @@ async function loadBarberAppointments() {
     <div class="section-label" style="margin-top:12px;">
       ${isToday ? '🔴 HOJE · ' : ''}${dateStr.toUpperCase()}
     </div>
-    ${appts.map(a => {
-      const client = a.profiles;
+    ${Object.values(cards).map(c => {
+      const client = c.client;
       const photoHtml = client?.avatar_url
         ? `<img class="cli-photo" src="${client.avatar_url}" alt="${client?.name}">`
         : `<div class="cli-photo-placeholder">${(client?.name||'?').charAt(0)}</div>`;
+      const svcLabel = c.services.filter((v,i,a) => a.indexOf(v)===i).join(' + ') || 'Serviço';
 
       return `
-      <div class="client-appt-card" onclick="openClientDetail('${a.id}')">
+      <div class="client-appt-card" onclick="openClientDetail('${c.apptId}')">
         ${photoHtml}
         <div class="cli-info">
           <div class="cli-name">${client?.name || 'Cliente'}</div>
           <div class="cli-nick">${client?.nick || ''}</div>
-          <div class="cli-service">✂️ ${a.services?.name || 'Serviço'}</div>
+          <div class="cli-service">✂️ ${svcLabel}</div>
         </div>
         <div class="cli-datetime">
-          <div class="cli-date">${new Date(a.date+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</div>
-          <div class="cli-time">${a.time?.slice(0,5)}</div>
-          <div class="cli-status ${statusClass[a.status]||''}">${statusLabel[a.status]||a.status}</div>
+          <div class="cli-date">${new Date(c.date+'T00:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</div>
+          <div class="cli-time">${c.time?.slice(0,5)}</div>
+          <div class="cli-status ${statusClass[c.status]||''}">${statusLabel[c.status]||c.status}</div>
         </div>
       </div>`;
     }).join('')}`;
   }).join('');
 }
-
 function setDashFilter(f) {
   currentState.dashFilter = f;
   reRenderScreen('barberDash');
+  setTimeout(loadBarberAppointments, 50);
 }
 
 function openClientDetail(apptId) {
