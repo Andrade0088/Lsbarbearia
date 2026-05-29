@@ -42,14 +42,20 @@ function renderSidebar() {
       <div class="s-item" onclick="goTo('escala');closeSidebar()">
         <span class="s-icon">🗓️</span><span class="s-label">Minha Escala</span>
       </div>` : ''}
-      ${isAdm ? `
-      <div class="s-item" onclick="goTo('barbeiros');closeSidebar()">
-        <span class="s-icon">⚙️</span><span class="s-label">Gerenciar</span>
-      </div>` : ''}
     </div>
-    <div class="sidebar-footer">
-      <a href="https://www.instagram.com/ls_barbearia00" target="_blank">📷</a>
-      <a href="https://wa.me/5511919021251" target="_blank">💬</a>
+    <div class="sidebar-footer" style="display:flex;gap:16px;align-items:center;padding:16px 20px;border-top:1px solid var(--border);">
+      <a href="https://www.instagram.com/ls_barbearia00" target="_blank"
+        style="display:flex;align-items:center;gap:6px;text-decoration:none;color:white;font-size:12px;font-weight:600;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"
+          style="width:20px;height:20px;border-radius:4px;" alt="Instagram">
+        @ls_barbearia00
+      </a>
+      <a href="https://wa.me/5511919021251" target="_blank"
+        style="display:flex;align-items:center;gap:6px;text-decoration:none;color:#25D366;font-size:12px;font-weight:600;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg"
+          style="width:20px;height:20px;" alt="WhatsApp">
+        (11) 91902-1251
+      </a>
     </div>
   </div>`;
 }

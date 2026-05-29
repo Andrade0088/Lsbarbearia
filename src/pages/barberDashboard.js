@@ -31,7 +31,7 @@ function renderBarberDash() {
     <!-- Stats -->
     <div class="stats-grid" id="dash-stats">
       <div class="stat-card"><div class="stat-num" id="stat-hoje">—</div><div class="stat-label">Hoje</div></div>
-      <div class="stat-card"><div class="stat-num" id="stat-receita">—</div><div class="stat-label">Receita hoje</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-receita">—</div><div class="stat-label">Ganhos hoje</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Total agendados</div></div>
       <div class="stat-card"><div class="stat-num" id="stat-pendente">—</div><div class="stat-label">Pendentes</div></div>
     </div>
