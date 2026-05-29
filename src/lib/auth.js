@@ -46,6 +46,7 @@ async function loadProfile(user) {
 
     authState = { user: user, profile: profile, role: profile.role, loading: false };
     redirectByRole(profile.role);
+    if (typeof initRealtime === 'function') setTimeout(initRealtime, 500);
   } catch(e) {
     console.error('loadProfile error:', e);
     authState = { user: user, profile: null, role: 'cliente', loading: false };
