@@ -14,6 +14,10 @@ var SCREENS = {
   ganhos:         renderGanhos,
   escala:         renderEscala,
   comanda:        renderComanda,
+  meusAgendamentos: renderMeusAgendamentos,
+  editarPerfil:   renderEditarPerfil,
+  avaliacoes:     renderAvaliacoes,
+  perfilBarbeiro: renderPerfilBarbeiro,
 };
 
 var HIDE_NAV = ['login', 'confirmacao'];
@@ -57,6 +61,7 @@ function renderScreen(name) {
   if (name === 'agendar')          setTimeout(initAgendar, 50);
   if (name === 'confirmacao')      syncConfirmScreen();
   if (name === 'perfil')           setTimeout(loadNextBooking, 100);
+  if (name === 'meusAgendamentos') setTimeout(loadMeusAgendamentos, 100);
   if (name === 'ganhos')           setTimeout(loadGanhos, 100);
   if (name === 'barberDash')       setTimeout(loadBarberAppointments, 100);
   if (name === 'chat')             setTimeout(loadChats, 100);
