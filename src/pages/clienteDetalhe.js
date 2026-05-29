@@ -58,8 +58,14 @@ async function loadClienteDetalhe() {
   var servicosHtml = '';
   var totalServico = 0;
 
-  grupo.forEach(function(a) {
-    var nome = (a.services && a.services.name) ? a.services.name : (a.notes && a.notes.indexOf('Consumo') < 0 ? a.notes : 'Serviço');
+  // Filtra rows que são agendamentos reais (não rows com totais de pagamento)
+  var grupoOriginal = grupo.filter(function(a) {
+    return !(a.notes && (a.notes.indexOf('Consumo') >= 0 || a.notes.indexOf('Desconto') >= 0));
+  });
+  if (grupoOriginal.length === 0) grupoOriginal = grupo;
+
+  grupoOriginal.forEach(function(a) {
+    var nome = (a.services && a.services.name) ? a.services.name : 'Serviço';
     var preco = parseFloat(a.price) > 0 ? parseFloat(a.price) : parseFloat((a.services && a.services.price) || 0);
     var dur = (a.services && a.services.duration_min) ? a.services.duration_min : null;
     totalServico += preco;
@@ -76,9 +82,9 @@ async function loadClienteDetalhe() {
       '</div>';
   });
 
-  // Resumo dos serviços para o box de total
-  var servicosResumo = grupo.map(function(a) {
-    var nome = (a.services && a.services.name) ? a.services.name : (a.notes && a.notes.indexOf('Consumo') < 0 ? a.notes : 'Serviço');
+  // Resumo dos serviços — usa grupoOriginal (sem rows de pagamento)
+  var servicosResumo = grupoOriginal.map(function(a) {
+    var nome = (a.services && a.services.name) ? a.services.name : 'Serviço';
     var preco = parseFloat(a.price) > 0 ? parseFloat(a.price) : parseFloat((a.services && a.services.price) || 0);
     return '<div style="display:flex;justify-content:space-between;padding:3px 0;">' +
       '<span style="font-size:13px;color:var(--text-muted);">' + nome + '</span>' +
@@ -274,23 +280,41 @@ async function confirmarPagamento(apptId, clientId) {
   Object.values(comanda).forEach(function(i){ totalComanda += i.price * i.qty; });
 
   var desconto = descontoState[clientId] || 0;
+
+  // Busca todas as rows do grupo (mesmo client/barber/date/time)
+  var apptBase = await sb.from('appointments').select('date,time,barber_id,price').eq('id', apptId).single();
+  if (apptBase.error || !apptBase.data) { alert('Erro ao buscar agendamento.'); return; }
+
+  var grupoIds = await sb.from('appointments')
+    .select('id,price')
+    .eq('client_id', clientId)
+    .eq('barber_id', apptBase.data.barber_id)
+    .eq('date', apptBase.data.date)
+    .eq('time', apptBase.data.time)
+    .in('status', ['pendente','confirmado']);
+
+  var rows = grupoIds.data || [{ id: apptId, price: apptBase.data.price }];
+  var totalServicos = rows.reduce(function(s,r){ return s + parseFloat(r.price||0); }, 0);
+  var valorDesc = totalServicos * (desconto / 100);
+  var totalFinalBanco = totalServicos - valorDesc + totalComanda;
+
+  // Constrói nota resumo
   var notas = [];
-  if (totalComanda > 0) notas.push('Consumo extra: R$ ' + totalComanda.toFixed(0));
+  if (totalComanda > 0) notas.push('Consumo: R$ ' + totalComanda.toFixed(0));
   if (desconto > 0) notas.push('Desconto: ' + desconto + '%');
+  var notaStr = notas.length > 0 ? notas.join(' | ') : null;
 
-  // Recalcula totalFinal para gravar no banco
-  var apptRow = await sb.from('appointments').select('price').eq('id', apptId).single();
-  var apptPrice = apptRow.data ? parseFloat(apptRow.data.price || 0) : 0;
-  var valorDescontoFinal = apptPrice * (desconto / 100);
-  var priceComDesconto = apptPrice - valorDescontoFinal + totalComanda;
-
-  var result = await sb.from('appointments').update({
-    status: 'concluido',
-    price: priceComDesconto > 0 ? priceComDesconto : apptPrice,
-    notes: notas.length > 0 ? notas.join(' | ') : null
-  }).eq('id', apptId);
-
-  if (result.error) { alert('Erro: ' + result.error.message); return; }
+  // Atualiza todas as rows do grupo para concluido
+  // A primeira row carrega o totalFinal, as demais ficam com price original
+  for (var i = 0; i < rows.length; i++) {
+    var updateData = { status: 'concluido' };
+    if (i === 0) {
+      updateData.price = totalFinalBanco;
+      updateData.notes = notaStr;
+    }
+    var r = await sb.from('appointments').update(updateData).eq('id', rows[i].id);
+    if (r.error) { alert('Erro: ' + r.error.message); return; }
+  }
 
   comandaItems[clientId] = {};
   descontoState[clientId] = 0;
