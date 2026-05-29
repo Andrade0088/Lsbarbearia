@@ -109,8 +109,8 @@ async function loadBarberAppointments() {
   // Atualiza stats
   const todayAppts = data.filter(a => a.date === today);
   const receitaHoje = todayAppts
-    .filter(a => a.status === 'concluido')
-    .reduce((sum, a) => sum + (parseFloat(a.services?.price) || 0), 0);
+    .filter(a => a.status === 'concluido' || a.status === 'pago')
+    .reduce((sum, a) => sum + (parseFloat(a.price) || parseFloat(a.services?.price) || 0), 0);
   const pendentes = data.filter(a => a.status === 'pendente').length;
 
   const sh = document.getElementById('stat-hoje');

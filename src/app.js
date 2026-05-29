@@ -80,6 +80,12 @@ function reRenderScreen(name) {
   var el = document.getElementById('screen-' + name);
   if (el) el.classList.add('active');
   updateBottomNav();
+  // Chama inits igual renderScreen
+  if (name === 'barberDash')       setTimeout(loadBarberAppointments, 50);
+  if (name === 'ganhos')           setTimeout(loadGanhos, 50);
+  if (name === 'clienteDetalhe')   setTimeout(loadClienteDetalhe, 50);
+  if (name === 'meusAgendamentos') setTimeout(loadMeusAgendamentos, 50);
+  if (name === 'chat')             setTimeout(loadChats, 50);
 }
 
 function goTo(name) { renderScreen(name); }
