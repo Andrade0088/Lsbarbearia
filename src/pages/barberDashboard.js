@@ -77,10 +77,15 @@ async function loadBarberAppointments() {
     .eq('barber_id', authState.user.id);
 
   if (allData) {
+    // Agrupa por client+date+time — usa só a row com maior price (evita duplicação)
+    const gruposHoje = {};
+    allData.filter(a => a.date === today && (a.status === 'concluido' || a.status === 'pago')).forEach(a => {
+      const key = (a.client_id||'x') + '_' + a.time;
+      const preco = parseFloat(a.price) || 0;
+      if (!gruposHoje[key] || preco > gruposHoje[key]) gruposHoje[key] = preco;
+    });
+    const receitaHoje = Object.values(gruposHoje).reduce((s, p) => s + p, 0);
     const todayAll = allData.filter(a => a.date === today);
-    const receitaHoje = todayAll
-      .filter(a => a.status === 'concluido' || a.status === 'pago')
-      .reduce((sum, a) => sum + (parseFloat(a.price) || 0), 0);
     const pendentes = allData.filter(a => a.status === 'pendente').length;
 
     const sh = document.getElementById('stat-hoje');

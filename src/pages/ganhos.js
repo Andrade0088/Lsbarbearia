@@ -84,9 +84,19 @@ async function loadGanhos() {
 
   if (error || !data) return;
 
-  // Soma só rows com price > 0 (rows extras do mesmo agendamento ficam com price=0)
-  const total = data.reduce((sum, a) => sum + (parseFloat(a.price) || 0), 0);
-  const qtd = data.length;
+  // Agrupa por client_id+date+time — usa só a row com maior price (a row principal do pagamento)
+  const grupos = {};
+  dataAgrupada.forEach(a => {
+    const key = (a.client_id||'x') + '_' + a.date + '_' + a.time;
+    const preco = parseFloat(a.price) || 0;
+    if (!grupos[key] || preco > grupos[key].price) {
+      grupos[key] = { ...a, price: preco };
+    }
+  });
+  const dataAgrupada = Object.values(grupos);
+
+  const total = dataAgrupada.reduce((sum, a) => sum + a.price, 0);
+  const qtd = dataAgrupada.length;
   const ticket = qtd > 0 ? (total / qtd).toFixed(0) : 0;
 
   const periodoLabel = { hoje:'Total hoje', semana:'Total semana', mes:'Total mês', ano:'Total ano' };
@@ -133,10 +143,10 @@ async function loadGanhos() {
   // Histórico
   const ghEl = document.getElementById('ganho-historico');
   if (ghEl) {
-    if (data.length === 0) {
+    if (dataAgrupada.length === 0) {
       ghEl.innerHTML = `<p style="color:var(--text-muted);font-size:13px;text-align:center;">Nenhum atendimento no período.</p>`;
     } else {
-      ghEl.innerHTML = data.map(a => `
+      ghEl.innerHTML = dataAgrupada.map(a => `
         <div style="display:flex;justify-content:space-between;align-items:center;
           padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);">
           <div>
