@@ -26,9 +26,21 @@ function renderEditarPerfil() {
         <label style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(255,30,30,.15);
           border:1px solid rgba(255,30,30,.4);border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;color:var(--red);">
           📷 Alterar foto
-          <input type="file" accept="image/*" capture="user" onchange="abrirCropFoto(this)" style="display:none;">
+          <input type="file" accept="image/*" onchange="abrirCropFoto(this)" style="display:none;">
         </label>
-        <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">Após selecionar, recorte e clique em Salvar</p>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:10px;">
+          <label style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--card);
+            border:1px solid rgba(255,255,255,.15);border-radius:20px;cursor:pointer;font-size:12px;color:white;">
+            🖼️ Galeria
+            <input type="file" accept="image/*" onchange="abrirCropFoto(this)" style="display:none;">
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--card);
+            border:1px solid rgba(255,255,255,.15);border-radius:20px;cursor:pointer;font-size:12px;color:white;">
+            📸 Câmera
+            <input type="file" accept="image/*" capture="environment" onchange="abrirCropFoto(this)" style="display:none;">
+          </label>
+        </div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px;">Após selecionar, recorte e clique em Salvar</p>
       </div>
 
       <!-- Modal de recorte -->
