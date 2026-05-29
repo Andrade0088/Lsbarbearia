@@ -236,12 +236,11 @@ async function loadClienteDetalhe() {
 
     <!-- Ações -->
     <div style="padding:0 20px 24px;display:flex;flex-direction:column;gap:10px;">
-      ${appt.status === 'pendente' ? `
-        <button class="btn" onclick="updateApptStatus(${appt.id},'confirmado')">✅ CONFIRMAR AGENDAMENTO</button>
-        <button class="btn-outline" onclick="updateApptStatus(${appt.id},'cancelado')" style="border-color:#ff4444;color:#ff4444;">✕ CANCELAR</button>
-      ` : appt.status === 'confirmado' ? `
+      ${appt.status === 'pendente' || appt.status === 'confirmado' ? `
         <button class="btn" onclick="confirmarPagamento(${appt.id},'${clientId}')">💰 CONFIRMAR PAGAMENTO (R$ ${totalFinal.toFixed(0)})</button>
         <button class="btn-outline" onclick="updateApptStatus(${appt.id},'cancelado')" style="border-color:#ff4444;color:#ff4444;">✕ CANCELAR</button>
+      ` : appt.status === 'never_used' ? `
+        <button class="btn" onclick="confirmarPagamento(${appt.id},'${clientId}')">💰 placeholder</button>
       ` : appt.status === 'concluido' || appt.status === 'pago' ? `
         <button class="btn-outline" disabled style="opacity:.4;">✔️ Atendimento concluído</button>
       ` : `
@@ -279,8 +278,15 @@ async function confirmarPagamento(apptId, clientId) {
   if (totalComanda > 0) notas.push('Consumo extra: R$ ' + totalComanda.toFixed(0));
   if (desconto > 0) notas.push('Desconto: ' + desconto + '%');
 
+  // Recalcula totalFinal para gravar no banco
+  var apptRow = await sb.from('appointments').select('price').eq('id', apptId).single();
+  var apptPrice = apptRow.data ? parseFloat(apptRow.data.price || 0) : 0;
+  var valorDescontoFinal = apptPrice * (desconto / 100);
+  var priceComDesconto = apptPrice - valorDescontoFinal + totalComanda;
+
   var result = await sb.from('appointments').update({
     status: 'concluido',
+    price: priceComDesconto > 0 ? priceComDesconto : apptPrice,
     notes: notas.length > 0 ? notas.join(' | ') : null
   }).eq('id', apptId);
 

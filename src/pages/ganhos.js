@@ -84,7 +84,7 @@ async function loadGanhos() {
 
   if (error || !data) return;
 
-  const total = data.reduce((sum, a) => sum + (parseFloat(a.services?.price) || 0), 0);
+  const total = data.reduce((sum, a) => sum + (parseFloat(a.price) || parseFloat(a.services?.price) || 0), 0);
   const qtd = data.length;
   const ticket = qtd > 0 ? (total / qtd).toFixed(0) : 0;
 
@@ -103,7 +103,7 @@ async function loadGanhos() {
   const porServico = {};
   data.forEach(a => {
     const nome = a.services?.name || 'Serviço';
-    const preco = parseFloat(a.services?.price) || 0;
+    const preco = parseFloat(a.price) || parseFloat(a.services?.price) || 0;
     if (!porServico[nome]) porServico[nome] = { qtd:0, total:0 };
     porServico[nome].qtd++;
     porServico[nome].total += preco;
@@ -144,7 +144,7 @@ async function loadGanhos() {
               ${new Date(a.date+'T00:00:00').toLocaleDateString('pt-BR')} · ${a.time?.slice(0,5)}
             </p>
           </div>
-          <p style="font-size:14px;font-weight:700;color:var(--red);">R$ ${parseFloat(a.services?.price||0).toFixed(0)}</p>
+          <p style="font-size:14px;font-weight:700;color:var(--red);">R$ ${(parseFloat(a.price) || parseFloat(a.services?.price) || 0).toFixed(0)}</p>
         </div>`).join('');
     }
   }
