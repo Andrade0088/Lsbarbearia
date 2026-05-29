@@ -70,6 +70,30 @@ async function loadBarberAppointments() {
   const today = new Date().toISOString().split('T')[0];
   const filter = currentState.dashFilter || 'todos';
 
+  // Query separada para stats (sempre busca tudo, independente do filtro)
+  const { data: allData } = await sb
+    .from('appointments')
+    .select('id, date, time, status, price, client_id, services(price)')
+    .eq('barber_id', authState.user.id);
+
+  if (allData) {
+    const todayAll = allData.filter(a => a.date === today);
+    const receitaHoje = todayAll
+      .filter(a => a.status === 'concluido' || a.status === 'pago')
+      .reduce((sum, a) => sum + (parseFloat(a.price) || parseFloat(a.services?.price) || 0), 0);
+    const pendentes = allData.filter(a => a.status === 'pendente').length;
+
+    const sh = document.getElementById('stat-hoje');
+    const sr = document.getElementById('stat-receita');
+    const st = document.getElementById('stat-total');
+    const sp = document.getElementById('stat-pendente');
+    if (sh) sh.textContent = todayAll.length;
+    if (sr) sr.textContent = `R$${receitaHoje.toFixed(0)}`;
+    if (st) st.textContent = allData.length;
+    if (sp) sp.textContent = pendentes;
+  }
+
+  // Query para a lista (com filtro)
   let query = sb
     .from('appointments')
     .select(`
@@ -105,22 +129,6 @@ async function loadBarberAppointments() {
       </div>`;
     return;
   }
-
-  // Atualiza stats
-  const todayAppts = data.filter(a => a.date === today);
-  const receitaHoje = todayAppts
-    .filter(a => a.status === 'concluido' || a.status === 'pago')
-    .reduce((sum, a) => sum + (parseFloat(a.price) || parseFloat(a.services?.price) || 0), 0);
-  const pendentes = data.filter(a => a.status === 'pendente').length;
-
-  const sh = document.getElementById('stat-hoje');
-  const sr = document.getElementById('stat-receita');
-  const st = document.getElementById('stat-total');
-  const sp = document.getElementById('stat-pendente');
-  if (sh) sh.textContent = todayAppts.length;
-  if (sr) sr.textContent = `R$${receitaHoje.toFixed(0)}`;
-  if (st) st.textContent = data.length;
-  if (sp) sp.textContent = pendentes;
 
   const statusLabel = { confirmado:'Confirmado', pendente:'Pendente', concluido:'Concluído', cancelado:'Cancelado' };
   const statusClass = { confirmado:'status-confirmado', pendente:'status-pendente', concluido:'status-concluido', cancelado:'status-pendente' };
