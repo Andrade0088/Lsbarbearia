@@ -16,11 +16,11 @@ function updateBottomNav() {
     { id:'nav-perfil',    icon:'👤', label:'Perfil',    page:'perfil' },
   ];
   var navBarbeiro = [
-    { id:'nav-home',    icon:'🏠', label:'Início', page:'home' },
-    { id:'nav-barbDash',icon:'📋', label:'Agenda', page:'barberDash' },
-    { id:'nav-chat',    icon:'💬', label:'Chat',   page:'chat' },
-    { id:'nav-ganhos',  icon:'💰', label:'Ganhos', page:'ganhos' },
-    { id:'nav-perfil',  icon:'👤', label:'Perfil', page:'perfil' },
+    { id:'nav-home',     icon:'🏠', label:'Início',  page:'home' },
+    { id:'nav-barbDash', icon:'📋', label:'Agenda',  page:'barberDash' },
+    { id:'nav-chat',     icon:'💬', label:'Chat',    page:'chat' },
+    { id:'nav-ganhos',   icon:'💰', label:'Ganhos',  page:'ganhos' },
+    { id:'nav-perfil',   icon:'👤', label:'Perfil',  page:'perfilBarbeiro' },
   ];
   var navAdm = [
     { id:'nav-home',     icon:'🏠', label:'Início',    page:'home' },
