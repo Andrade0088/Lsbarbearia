@@ -341,44 +341,72 @@ async function confirmarAgendamento() {
   if (errEl) errEl.style.display = 'none';
   if (btn) { btn.disabled = true; btn.textContent = 'Agendando...'; }
 
-  // Busca UUID do barbeiro pelo nick
-  var barberResult = await sb.from('profiles').select('id').eq('nick', agendarState.barberNick).single();
-  var barberUUID = barberResult.data ? barberResult.data.id : null;
+  try {
+    // Busca UUID do barbeiro — tenta pelo nome completo
+    var barberUUID = null;
 
-  if (!barberUUID) {
-    if (errEl) { errEl.textContent = 'Barbeiro não encontrado.'; errEl.style.display = 'block'; }
+    // 1) tenta pelo nick
+    if (agendarState.barberNick) {
+      var r1 = await sb.from('profiles').select('id').eq('nick', agendarState.barberNick).maybeSingle();
+      if (r1.data) barberUUID = r1.data.id;
+    }
+
+    // 2) fallback: pelo nome completo
+    if (!barberUUID && agendarState.barberName) {
+      var r2 = await sb.from('profiles').select('id').eq('name', agendarState.barberName).maybeSingle();
+      if (r2.data) barberUUID = r2.data.id;
+    }
+
+    // 3) fallback: lista barbeiros e acha por nome parcial
+    if (!barberUUID) {
+      var r3 = await sb.from('profiles').select('id,name,nick').eq('role','barbeiro');
+      if (r3.data && r3.data.length > 0) {
+        var match = r3.data.find(function(p) {
+          return (p.name && p.name.toLowerCase().indexOf(agendarState.barberName.toLowerCase()) >= 0) ||
+                 (p.nick && p.nick.toLowerCase().indexOf((agendarState.barberNick||'').toLowerCase()) >= 0);
+        });
+        if (match) barberUUID = match.id;
+      }
+    }
+
+    if (!barberUUID) {
+      throw new Error('Barbeiro "' + agendarState.barberName + '" não encontrado no Supabase. Verifique se o barbeiro tem role=barbeiro na tabela profiles.');
+    }
+
+    // Insere um agendamento para cada serviço
+    var erros = [];
+
+    for (var i = 0; i < agendarState.services.length; i++) {
+      var svc = agendarState.services[i];
+      var serviceId = null;
+
+      var svcResult = await sb.from('services').select('id').eq('name', svc.name).maybeSingle();
+      if (svcResult.data) serviceId = svcResult.data.id;
+
+      var ins = await sb.from('appointments').insert({
+        client_id:  authState.user.id,
+        barber_id:  barberUUID,
+        service_id: serviceId,
+        date:       agendarState.dateISO,
+        time:       agendarState.time + ':00',
+        status:     'pendente',
+        price:      svc.price,
+        notes:      i === 0 ? agendarState.notes : ''
+      });
+      if (ins.error) erros.push(ins.error.message || JSON.stringify(ins.error));
+    }
+
     if (btn) { btn.disabled = false; btn.textContent = '✅ CONFIRMAR'; }
-    return;
+
+    if (erros.length > 0) {
+      throw new Error(erros.join(' | '));
+    }
+
+    goTo('confirmacao');
+
+  } catch(e) {
+    console.error('confirmarAgendamento erro:', e);
+    if (errEl) { errEl.textContent = e.message || 'Erro ao agendar. Tente novamente.'; errEl.style.display = 'block'; }
+    if (btn) { btn.disabled = false; btn.textContent = '✅ CONFIRMAR'; }
   }
-
-  // Insere um agendamento para cada serviço
-  var total = agendarState.services.reduce(function(sum,s){ return sum+(s.price||0); }, 0);
-  var erros = [];
-
-  for (var i = 0; i < agendarState.services.length; i++) {
-    var svc = agendarState.services[i];
-    var svcResult = await sb.from('services').select('id').eq('name', svc.name).single();
-    var serviceId = svcResult.data ? svcResult.data.id : null;
-
-    var ins = await sb.from('appointments').insert({
-      client_id:  authState.user.id,
-      barber_id:  barberUUID,
-      service_id: serviceId,
-      date:       agendarState.dateISO,
-      time:       agendarState.time + ':00',
-      status:     'pendente',
-      price:      svc.price,
-      notes:      i === 0 ? agendarState.notes : ''
-    });
-    if (ins.error) erros.push(ins.error);
-  }
-
-  if (btn) { btn.disabled = false; btn.textContent = '✅ CONFIRMAR'; }
-
-  if (erros.length > 0) {
-    if (errEl) { errEl.textContent = 'Erro ao agendar. Tente novamente.'; errEl.style.display = 'block'; }
-    return;
-  }
-
-  goTo('confirmacao');
 }
