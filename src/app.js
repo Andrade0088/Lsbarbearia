@@ -64,6 +64,7 @@ function renderScreen(name) {
   if (name === 'meusAgendamentos') setTimeout(loadMeusAgendamentos, 100);
   if (name === 'ganhos')           setTimeout(loadGanhos, 100);
   if (name === 'barberDash')       setTimeout(loadBarberAppointments, 100);
+  if (name === 'escala')           setTimeout(function(){ initEscala(); loadEscala(); }, 100);
   if (name === 'chat')             setTimeout(loadChats, 100);
   if (name === 'galeria')          setTimeout(loadGaleriaFotos, 100);
   if (name === 'clienteDetalhe')   setTimeout(loadClienteDetalhe, 100);
