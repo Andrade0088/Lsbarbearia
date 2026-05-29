@@ -80,7 +80,7 @@ async function loadBarberAppointments() {
     const todayAll = allData.filter(a => a.date === today);
     const receitaHoje = todayAll
       .filter(a => a.status === 'concluido' || a.status === 'pago')
-      .reduce((sum, a) => sum + (parseFloat(a.price) || parseFloat(a.services?.price) || 0), 0);
+      .reduce((sum, a) => sum + (parseFloat(a.price) || 0), 0);
     const pendentes = allData.filter(a => a.status === 'pendente').length;
 
     const sh = document.getElementById('stat-hoje');
