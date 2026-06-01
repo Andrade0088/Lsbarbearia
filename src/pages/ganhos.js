@@ -39,7 +39,7 @@ function renderGanhos() {
 
     <!-- Por serviço -->
     <div style="padding:0 20px;">
-      <p style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-muted);margin:16px 0 10px;">POR SERVIÇO</p>
+      <p style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-muted);margin:16px 0 10px;">TOP CLIENTES</p>
       <div id="ganho-servicos">
         <div style="text-align:center;padding:20px;color:var(--text-muted);">Carregando...</div>
       </div>
@@ -76,7 +76,7 @@ async function loadGanhos() {
 
   const { data, error } = await sb
     .from('appointments')
-    .select('*, services(name, price)')
+    .select('*, services(name, price), profiles!appointments_client_id_fkey(id, name, nick)')
     .eq('barber_id', authState.user.id)
     .eq('status', 'concluido')
     .gte('date', startDate)
@@ -110,29 +110,31 @@ async function loadGanhos() {
   if (gq) gq.textContent = qtd;
   if (gk) gk.textContent = `R$ ${ticket}`;
 
-  // Por serviço
-  const porServico = {};
+  // Por cliente
+  const porCliente = {};
   dataAgrupada.forEach(a => {
-    const nome = a.services?.name || 'Serviço';
+    const nome = a.profiles?.name || 'Cliente';
+    const nick = a.profiles?.nick || '';
+    const id = a.profiles?.id || 'x';
     const preco = parseFloat(a.price) || 0;
-    if (!porServico[nome]) porServico[nome] = { qtd:0, total:0 };
-    porServico[nome].qtd++;
-    porServico[nome].total += preco;
+    if (!porCliente[id]) porCliente[id] = { nome, nick, qtd:0, total:0 };
+    porCliente[id].qtd++;
+    porCliente[id].total += preco;
   });
 
   const gsEl = document.getElementById('ganho-servicos');
   if (gsEl) {
-    if (Object.keys(porServico).length === 0) {
+    if (Object.keys(porCliente).length === 0) {
       gsEl.innerHTML = `<p style="color:var(--text-muted);font-size:13px;text-align:center;">Nenhum atendimento no período.</p>`;
     } else {
-      gsEl.innerHTML = Object.entries(porServico)
+      gsEl.innerHTML = Object.entries(porCliente)
         .sort((a,b) => b[1].total - a[1].total)
-        .map(([nome, info]) => `
+        .map(([id, info]) => `
           <div style="display:flex;justify-content:space-between;align-items:center;
             padding:12px 14px;background:var(--card);border-radius:12px;margin-bottom:8px;
             border:1px solid var(--border);">
             <div>
-              <p style="font-size:13px;font-weight:600;">✂️ ${nome}</p>
+              <p style="font-size:13px;font-weight:600;">👤 ${info.nome}</p>
               <p style="font-size:11px;color:var(--text-muted);">${info.qtd}x atendimento${info.qtd>1?'s':''}</p>
             </div>
             <p style="font-size:15px;font-weight:800;color:var(--red);">R$ ${info.total.toFixed(0)}</p>
@@ -150,7 +152,7 @@ async function loadGanhos() {
         <div style="display:flex;justify-content:space-between;align-items:center;
           padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05);">
           <div>
-            <p style="font-size:13px;font-weight:600;">${a.services?.name || 'Serviço'}</p>
+            <p style="font-size:13px;font-weight:600;">${a.profiles?.name || 'Cliente'}</p>
             <p style="font-size:11px;color:var(--text-muted);">
               ${new Date(a.date+'T00:00:00').toLocaleDateString('pt-BR')} · ${a.time?.slice(0,5)}
             </p>
