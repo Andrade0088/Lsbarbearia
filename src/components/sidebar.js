@@ -41,6 +41,9 @@ function renderSidebar() {
       </div>
       <div class="s-item" onclick="goTo('escala');closeSidebar()">
         <span class="s-icon">🗓️</span><span class="s-label">Minha Escala</span>
+      </div>
+      <div class="s-item" onclick="goTo('gestaoClientes');closeSidebar()">
+        <span class="s-icon">👥</span><span class="s-label">Gestão de Clientes</span>
       </div>` : ''}
     </div>
     <div class="sidebar-footer" style="display:flex;gap:16px;align-items:center;padding:16px 20px;border-top:1px solid var(--border);">

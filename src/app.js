@@ -18,6 +18,7 @@ var SCREENS = {
   editarPerfil:   renderEditarPerfil,
   avaliacoes:     renderAvaliacoes,
   perfilBarbeiro: renderPerfilBarbeiro,
+  gestaoClientes: renderGestaoClientes,
 };
 
 var HIDE_NAV = ['login', 'confirmacao'];
@@ -29,22 +30,39 @@ function buildApp() {
   initAuth();
 }
 
+function callScreenInits(name) {
+  if (name === 'agendar')          setTimeout(initAgendar, 50);
+  if (name === 'confirmacao')      setTimeout(syncConfirmScreen, 50);
+  if (name === 'perfil')           setTimeout(loadNextBooking, 100);
+  if (name === 'meusAgendamentos') setTimeout(loadMeusAgendamentos, 100);
+  if (name === 'ganhos')           setTimeout(loadGanhos, 100);
+  if (name === 'barberDash')       setTimeout(loadBarberAppointments, 100);
+  if (name === 'comanda')          setTimeout(initComanda, 100);
+  if (name === 'escala')           setTimeout(function(){ initEscala(); loadEscala(); }, 100);
+  if (name === 'chat')             setTimeout(loadChats, 100);
+  if (name === 'galeria')          setTimeout(loadGaleriaFotos, 100);
+  if (name === 'clienteDetalhe')   setTimeout(loadClienteDetalhe, 100);
+  if (name === 'gestaoClientes')   setTimeout(loadGestaoClientes, 100);
+}
+
 function renderScreen(name) {
   if (!SCREENS[name]) { console.warn('Tela não encontrada:', name); return; }
 
-  var old = document.getElementById('screen-' + currentScreen);
-  if (old) old.parentNode.removeChild(old);
-
-  currentScreen = name;
-
-  var nav = document.getElementById('bottomNav');
+  // Gera HTML novo ANTES de remover o antigo
   var html = SCREENS[name]();
 
+  var nav = document.getElementById('bottomNav');
   if (!nav) {
     document.getElementById('app').insertAdjacentHTML('beforeend', html);
   } else {
     nav.insertAdjacentHTML('beforebegin', html);
   }
+
+  // Remove tela anterior SÓ DEPOIS de inserir a nova
+  var oldEl = document.getElementById('screen-' + currentScreen);
+  if (oldEl && currentScreen !== name) oldEl.parentNode.removeChild(oldEl);
+
+  currentScreen = name;
 
   var el = document.getElementById('screen-' + name);
   if (el) {
@@ -57,37 +75,26 @@ function renderScreen(name) {
 
   updateBottomNav();
   updateSidebarActive(name);
-
-  if (name === 'agendar')          setTimeout(initAgendar, 50);
-  if (name === 'confirmacao')      syncConfirmScreen();
-  if (name === 'perfil')           setTimeout(loadNextBooking, 100);
-  if (name === 'meusAgendamentos') setTimeout(loadMeusAgendamentos, 100);
-  if (name === 'ganhos')           setTimeout(loadGanhos, 100);
-  if (name === 'barberDash')       setTimeout(loadBarberAppointments, 100);
-  if (name === 'comanda')          setTimeout(initComanda, 100);
-  if (name === 'escala')           setTimeout(function(){ initEscala(); loadEscala(); }, 100);
-  if (name === 'chat')             setTimeout(loadChats, 100);
-  if (name === 'galeria')          setTimeout(loadGaleriaFotos, 100);
-  if (name === 'clienteDetalhe')   setTimeout(loadClienteDetalhe, 100);
+  callScreenInits(name);
 }
 
 function reRenderScreen(name) {
-  var old = document.getElementById('screen-' + name);
-  if (!old) return;
-  var nav = document.getElementById('bottomNav');
+  // Gera novo HTML
   var html = SCREENS[name]();
+  var nav = document.getElementById('bottomNav');
   if (nav) nav.insertAdjacentHTML('beforebegin', html);
   else document.getElementById('app').insertAdjacentHTML('beforeend', html);
-  old.parentNode.removeChild(old);
+
+  // Remove o antigo depois
+  var oldEl = document.getElementById('screen-' + name);
+  // há dois agora — remove o primeiro (antigo)
+  var allScreens = document.querySelectorAll('#screen-' + name);
+  if (allScreens.length > 1) allScreens[0].parentNode.removeChild(allScreens[0]);
+
   var el = document.getElementById('screen-' + name);
   if (el) el.classList.add('active');
   updateBottomNav();
-  // Chama inits igual renderScreen
-  if (name === 'barberDash')       setTimeout(loadBarberAppointments, 50);
-  if (name === 'ganhos')           setTimeout(loadGanhos, 50);
-  if (name === 'clienteDetalhe')   setTimeout(loadClienteDetalhe, 50);
-  if (name === 'meusAgendamentos') setTimeout(loadMeusAgendamentos, 50);
-  if (name === 'chat')             setTimeout(loadChats, 50);
+  callScreenInits(name);
 }
 
 function goTo(name) { renderScreen(name); }
