@@ -342,6 +342,12 @@ async function confirmarAgendamento() {
   if (btn) { btn.disabled = true; btn.textContent = 'Agendando...'; }
 
   try {
+    // Verifica se o cliente está bloqueado
+    var bloqCheck = await sb.from('profiles').select('blocked').eq('id', authState.user.id).single();
+    if (bloqCheck.data && bloqCheck.data.blocked) {
+      throw new Error('Sua conta está bloqueada. Entre em contato com a barbearia para regularizar.');
+    }
+
     // Busca UUID do barbeiro — tenta pelo nome completo
     var barberUUID = null;
 

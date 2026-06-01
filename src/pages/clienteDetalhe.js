@@ -38,6 +38,10 @@ async function loadClienteDetalhe() {
   var client = appt.profiles;
   var clientId = client ? client.id : 'unknown';
 
+  // Busca se cliente está bloqueado
+  var bloqResult = await sb.from('profiles').select('blocked').eq('id', clientId).single();
+  var isBloqueado = bloqResult.data && bloqResult.data.blocked;
+
   if (!comandaItems[clientId]) comandaItems[clientId] = {};
 
   // Busca grupo: mesmo client/barber/date/time — todos os status exceto cancelado
@@ -232,6 +236,23 @@ async function loadClienteDetalhe() {
       ` : `
         <button class="btn-outline" disabled style="opacity:.4;">${statusLabel[appt.status]||appt.status}</button>
       `}
+      <!-- Zona de gestão do cliente -->
+      <div style="margin:0 0 8px;padding:16px 20px;border-top:0.5px solid rgba(255,255,255,.06);">
+        <p style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px;">⚙️ GESTÃO DO CLIENTE</p>
+        <div style="display:flex;gap:8px;">
+          <button onclick="toggleBloquearCliente('${clientId}','${client?client.name:''}')" style="flex:1;padding:12px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;
+            background:${isBloqueado ? 'rgba(0,200,100,.1)' : 'rgba(255,165,0,.08)'};
+            border:1px solid ${isBloqueado ? 'rgba(0,200,100,.4)' : 'rgba(255,165,0,.4)'};
+            color:${isBloqueado ? '#00c864' : '#ffa500'};">
+            ${isBloqueado ? '🔓 Desbloquear' : '🔒 Bloquear'}
+          </button>
+          <button onclick="excluirCliente('${clientId}','${client?client.name:''}')" style="flex:1;padding:12px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;
+            background:rgba(255,30,30,.08);border:1px solid rgba(255,30,30,.3);color:#ff4444;">
+            🗑 Excluir perfil
+          </button>
+        </div>
+        ${isBloqueado ? '<p style="font-size:11px;color:#ffa500;margin-top:8px;text-align:center;">⚠️ Cliente bloqueado — não consegue agendar</p>' : ''}
+      </div>
     </div>`;
 }
 
@@ -315,4 +336,36 @@ async function confirmarPagamento(apptId, clientId) {
 function startChatWithClient(userId, name, phone) {
   currentState.pendingChat = { userId:userId, name:name, phone:phone, role:'cliente' };
   goTo('chat');
+}
+
+async function toggleBloquearCliente(clientId, name) {
+  var r = await sb.from('profiles').select('blocked').eq('id', clientId).single();
+  var atual = r.data && r.data.blocked;
+  var novoStatus = !atual;
+  var confirmMsg = novoStatus
+    ? 'Bloquear ' + name + '? Ele não conseguirá fazer novos agendamentos.'
+    : 'Desbloquear ' + name + '?';
+  if (!confirm(confirmMsg)) return;
+
+  var result = await sb.from('profiles').update({ blocked: novoStatus }).eq('id', clientId);
+  if (result.error) { alert('Erro: ' + result.error.message); return; }
+  await loadClienteDetalhe();
+}
+
+async function excluirCliente(clientId, name) {
+  if (!confirm('Excluir o perfil de ' + name + '? Esta ação não pode ser desfeita.')) return;
+  if (!confirm('Confirma a exclusão de ' + name + '? Todos os dados serão removidos.')) return;
+
+  // Cancela agendamentos futuros
+  await sb.from('appointments')
+    .update({ status: 'cancelado' })
+    .eq('client_id', clientId)
+    .in('status', ['pendente','confirmado']);
+
+  // Deleta o perfil (cascade remove appointments via FK se configurado)
+  var result = await sb.from('profiles').delete().eq('id', clientId);
+  if (result.error) { alert('Erro ao excluir: ' + result.error.message); return; }
+
+  alert('Perfil de ' + name + ' removido.');
+  goTo('barberDash');
 }
