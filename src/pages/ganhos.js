@@ -86,7 +86,7 @@ async function loadGanhos() {
 
   // Agrupa por client_id+date+time — usa só a row com maior price (a row principal do pagamento)
   const grupos = {};
-  dataAgrupada.forEach(a => {
+  data.forEach(a => {
     const key = (a.client_id||'x') + '_' + a.date + '_' + a.time;
     const preco = parseFloat(a.price) || 0;
     if (!grupos[key] || preco > grupos[key].price) {
@@ -112,9 +112,9 @@ async function loadGanhos() {
 
   // Por serviço
   const porServico = {};
-  data.forEach(a => {
+  dataAgrupada.forEach(a => {
     const nome = a.services?.name || 'Serviço';
-    const preco = parseFloat(a.price) || 0; // rows extras têm price=0
+    const preco = parseFloat(a.price) || 0;
     if (!porServico[nome]) porServico[nome] = { qtd:0, total:0 };
     porServico[nome].qtd++;
     porServico[nome].total += preco;
