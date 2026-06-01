@@ -1,16 +1,6 @@
-function renderSidebar() {
+function renderSidebarMenuItems() {
   var isBarbeiro = authState && (authState.role === 'barbeiro' || authState.role === 'adm');
-  var isAdm = authState && authState.role === 'adm';
-
   return `
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-  <div class="sidebar" id="sidebar">
-    <button class="sidebar-close" onclick="closeSidebar()">✕</button>
-    <div class="sidebar-header">
-      <div class="sidebar-logo">LS<span>BARBEARIA</span></div>
-      <div class="sidebar-sub">ESTILO · ATITUDE · CONFIANÇA</div>
-    </div>
-    <div class="sidebar-menu">
       <div class="s-item active" onclick="goTo('home');closeSidebar()">
         <span class="s-icon">🏠</span><span class="s-label">Início</span>
       </div>
@@ -44,7 +34,22 @@ function renderSidebar() {
       </div>
       <div class="s-item" onclick="goTo('gestaoClientes');closeSidebar()">
         <span class="s-icon">👥</span><span class="s-label">Gestão de Clientes</span>
-      </div>` : ''}
+      </div>` : ''}`;
+}
+
+function renderSidebar() {
+  var isAdm = authState && authState.role === 'adm';
+
+  return `
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <div class="sidebar" id="sidebar">
+    <button class="sidebar-close" onclick="closeSidebar()">✕</button>
+    <div class="sidebar-header">
+      <div class="sidebar-logo">LS<span>BARBEARIA</span></div>
+      <div class="sidebar-sub">ESTILO · ATITUDE · CONFIANÇA</div>
+    </div>
+    <div class="sidebar-menu" id="sidebar-menu">
+      ${renderSidebarMenuItems()}
     </div>
     <div class="sidebar-footer" style="display:flex;gap:16px;align-items:center;padding:16px 20px;border-top:1px solid var(--border);">
       <a href="https://www.instagram.com/ls_barbearia00" target="_blank"

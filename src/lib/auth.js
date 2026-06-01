@@ -55,13 +55,11 @@ async function loadProfile(user) {
 }
 
 function redirectByRole(role) {
-  // Re-renderiza sidebar para mostrar itens do role correto
-  var sidebarEl = document.getElementById('sidebar');
-  if (sidebarEl) {
-    var tmp = document.createElement('div');
-    tmp.innerHTML = renderSidebar();
-    sidebarEl.parentNode.replaceChild(tmp.firstChild, sidebarEl);
-  }
+  // Atualiza só os itens dinâmicos do sidebar (items de barbeiro)
+  setTimeout(function() {
+    var menuEl = document.getElementById('sidebar-menu');
+    if (menuEl) menuEl.innerHTML = renderSidebarMenuItems();
+  }, 100);
   if (role === 'adm') {
     goTo('home');
   } else if (role === 'barbeiro') {
